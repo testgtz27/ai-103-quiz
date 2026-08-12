@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>AI-103 Quiz 2 (30 câu)</title>
 <style>
 :root{
@@ -87,11 +88,50 @@ button.act{
 .finalscreen{text-align:center; padding:40px 20px;}
 .finalscreen h2{font-size:24px;}
 .finalscreen .big{font-size:48px; font-weight:800; color:var(--blue); margin:10px 0;}
-.jumpgrid{display:grid; grid-template-columns:repeat(10,1fr); gap:6px; margin-top:20px;}
-.jumpgrid button{aspect-ratio:1; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:12px; cursor:pointer;}
+.jumpgrid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+.jumpgrid button{aspect-ratio:1; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:13px; cursor:pointer;}
 .jumpgrid button.done-ok{background:var(--green-bg); border-color:var(--green); color:var(--green);}
 .jumpgrid button.done-no{background:var(--red-bg); border-color:var(--red); color:var(--red);}
 .jumpgrid button.current{outline:2px solid var(--blue);}
+
+.hamburger{
+  background:none; border:1px solid var(--border); border-radius:8px; width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;
+}
+.hamburger span{display:block; width:16px; height:2px; background:#202124; position:relative;}
+.hamburger span::before, .hamburger span::after{content:''; position:absolute; left:0; width:16px; height:2px; background:#202124;}
+.hamburger span::before{top:-5px;} .hamburger span::after{top:5px;}
+
+.sidebar-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:30; display:none;
+}
+.sidebar-overlay.open{display:block;}
+.sidebar{
+  position:fixed; top:0; right:-300px; width:280px; max-width:82vw; height:100%;
+  background:#fff; z-index:40; box-shadow:-2px 0 12px rgba(0,0,0,.15);
+  transition:right .25s ease; overflow-y:auto; padding:16px;
+}
+.sidebar.open{right:0;}
+.sidebar-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+.sidebar-header h2{font-size:15px; margin:0;}
+.sidebar-close{background:none; border:none; font-size:22px; line-height:1; cursor:pointer; color:var(--gray); padding:0 4px;}
+.sidebar-legend{display:flex; gap:12px; font-size:11px; color:var(--gray); margin-bottom:12px; flex-wrap:wrap;}
+.sidebar-legend span{display:inline-flex; align-items:center; gap:4px;}
+.legend-dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+.legend-dot.ok{background:var(--green-bg); border:1px solid var(--green);}
+.legend-dot.no{background:var(--red-bg); border:1px solid var(--red);}
+.legend-dot.none{background:#fff; border:1px solid var(--border);}
+
+@media (max-width:480px){
+  .wrap{padding:14px 12px 40px;}
+  .card{padding:16px 14px;}
+  .qtext{font-size:16px;}
+  .option{padding:11px 12px;}
+  .option .label{font-size:14px;}
+  .actions{flex-direction:column;}
+  header h1{font-size:15px;}
+  .score{font-size:12px;}
+}
 .btn-copy{background:#fff; color:var(--blue); border:1px solid var(--blue);}
 .btn-copy:hover{background:#eaf1fe;}
 .copy-toast{
@@ -106,15 +146,32 @@ button.act{
 <header>
   <div class="top">
     <h1>AI-103 · Quiz 2</h1>
-    <div class="score" id="scoreLabel">0 / 30 đúng</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="score" id="scoreLabel">0 / 30 đúng</div>
+      <button class="hamburger" onclick="openSidebar()" aria-label="Danh sách câu hỏi"><span></span></button>
+    </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 </header>
 
 <div class="wrap">
   <div id="quizArea"></div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Danh sách câu hỏi</h2>
+    <button class="sidebar-close" onclick="closeSidebar()">&times;</button>
+  </div>
+  <div class="sidebar-legend">
+    <span><span class="legend-dot ok"></span>Đúng</span>
+    <span><span class="legend-dot no"></span>Sai</span>
+    <span><span class="legend-dot none"></span>Chưa làm</span>
+  </div>
   <div class="jumpgrid" id="jumpGrid"></div>
 </div>
+
 <div class="copy-toast" id="copyToast">Đã copy prompt vào clipboard ✓</div>
 
 <script>
@@ -297,7 +354,7 @@ function buildJumpGrid(){
   quizData.forEach((q,i)=>{
     const b = document.createElement('button');
     b.textContent = i+1;
-    b.onclick = ()=>{ current = i; render(); };
+    b.onclick = ()=>{ current = i; render(); closeSidebar(); };
     jumpGrid.appendChild(b);
   });
 }
@@ -693,6 +750,15 @@ function fallbackCopy(text, cb){
 
 function goPrev(){ if(current>0){ current--; render(); } }
 function goNext(){ if(current<quizData.length-1){ current++; render(); } }
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
 
 buildJumpGrid();
 render();
