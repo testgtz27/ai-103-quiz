@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI-103 Quiz 4 (60 câu)</title>
+<style>
+:root{
+  --green:#1e8e3e; --green-bg:#e6f4ea;
+  --red:#d93025; --red-bg:#fce8e6;
+  --blue:#1a73e8; --gray:#5f6368; --border:#dadce0;
+}
+*{box-sizing:border-box;}
+body{
+  font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background:#f6f7f9; margin:0; padding:0; color:#202124;
+}
+.wrap{max-width:760px; margin:0 auto; padding:20px 16px 60px;}
+header{position:sticky; top:0; background:#fff; border-bottom:1px solid var(--border); padding:12px 16px; z-index:5;}
+header .top{display:flex; justify-content:space-between; align-items:center; max-width:760px; margin:0 auto;}
+header h1{font-size:16px; margin:0;}
+.progress-bar{height:6px; background:#eee; border-radius:4px; margin-top:8px; overflow:hidden;}
+.progress-fill{height:100%; background:var(--blue); width:0%; transition:width .2s;}
+.score{font-size:13px; color:var(--gray);}
+.card{background:#fff; border:1px solid var(--border); border-radius:10px; padding:20px; margin-top:18px;}
+.qnum{font-size:12px; color:var(--blue); font-weight:600; text-transform:uppercase; letter-spacing:.5px;}
+.qtext{font-size:17px; font-weight:600; margin:8px 0 14px; line-height:1.4;}
+.hint{font-size:13px; color:var(--gray); margin-bottom:10px;}
+.option{
+  display:flex; align-items:flex-start; gap:10px;
+  border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:8px;
+  cursor:pointer; transition:background .15s, border-color .15s;
+}
+.option:hover{background:#f1f4fd;}
+.option .mark{
+  flex:0 0 20px; height:20px; border:2px solid #bbb; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; margin-top:2px;
+}
+.option.multi .mark{border-radius:4px;}
+.option.selected .mark{background:var(--blue); border-color:var(--blue);}
+.option.correct{background:var(--green-bg); border-color:var(--green);}
+.option.correct .mark{background:var(--green); border-color:var(--green);}
+.option.incorrect{background:var(--red-bg); border-color:var(--red);}
+.option.incorrect .mark{background:var(--red); border-color:var(--red);}
+.option .label{font-size:15px; line-height:1.4;}
+.statement{border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:10px;}
+.statement .stext{font-size:15px; margin-bottom:10px;}
+.tfbtns{display:flex; gap:8px;}
+.tfbtn{flex:1; padding:8px 0; text-align:center; border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; color:var(--gray);}
+.tfbtn:hover{background:#f1f4fd;}
+.tfbtn.selected{border-color:var(--blue); color:var(--blue); background:#eaf1fe;}
+.tfbtn.correct{background:var(--green-bg); border-color:var(--green); color:var(--green);}
+.tfbtn.incorrect{background:var(--red-bg); border-color:var(--red); color:var(--red);}
+.matchrow{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:8px;}
+.matchrow .desc{font-size:14px; flex:1;}
+select{
+  font-size:14px; padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:#fff; min-width:180px;
+}
+.matchrow.correct{background:var(--green-bg); border-color:var(--green);}
+.matchrow.incorrect{background:var(--red-bg); border-color:var(--red);}
+.orderitem{display:flex; align-items:center; gap:12px; border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:8px;}
+.orderitem .otext{flex:1; font-size:14px;}
+.orderitem.correct{background:var(--green-bg); border-color:var(--green);}
+.orderitem.incorrect{background:var(--red-bg); border-color:var(--red);}
+.fillrow{margin-bottom:12px; font-size:15px; line-height:1.6;}
+.fillrow select{margin:0 4px;}
+.fillrow.correct select{background:var(--green-bg); border-color:var(--green);}
+.fillrow.incorrect select{background:var(--red-bg); border-color:var(--red);}
+.actions{display:flex; gap:10px; margin-top:18px;}
+button.act{
+  flex:1; padding:12px 0; border-radius:8px; border:none; font-size:15px; font-weight:600; cursor:pointer;
+}
+.btn-check{background:var(--blue); color:#fff;}
+.btn-check:disabled{background:#c7d4f5; cursor:not-allowed;}
+.btn-next{background:#202124; color:#fff;}
+.explain{
+  margin-top:16px; padding:14px 16px; border-radius:8px; background:#fff8e1; border:1px solid #f2d675;
+  font-size:14px; line-height:1.55; display:none;
+}
+.explain.show{display:block;}
+.explain b{color:#8a6d00;}
+.result-badge{display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700; margin-bottom:8px;}
+.result-badge.ok{background:var(--green-bg); color:var(--green);}
+.result-badge.no{background:var(--red-bg); color:var(--red);}
+.navrow{display:flex; justify-content:space-between; margin-top:14px;}
+.navrow button{background:none; border:none; color:var(--blue); font-size:14px; cursor:pointer; padding:6px 4px;}
+.navrow button:disabled{color:#ccc; cursor:not-allowed;}
+.finalscreen{text-align:center; padding:40px 20px;}
+.finalscreen h2{font-size:24px;}
+.finalscreen .big{font-size:48px; font-weight:800; color:var(--blue); margin:10px 0;}
+.jumpgrid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+.jumpgrid button{aspect-ratio:1; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:13px; cursor:pointer;}
+.jumpgrid button.done-ok{background:var(--green-bg); border-color:var(--green); color:var(--green);}
+.jumpgrid button.done-no{background:var(--red-bg); border-color:var(--red); color:var(--red);}
+.jumpgrid button.current{outline:2px solid var(--blue);}
+
+.hamburger{
+  background:none; border:1px solid var(--border); border-radius:8px; width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;
+}
+.hamburger span{display:block; width:16px; height:2px; background:#202124; position:relative;}
+.hamburger span::before, .hamburger span::after{content:''; position:absolute; left:0; width:16px; height:2px; background:#202124;}
+.hamburger span::before{top:-5px;} .hamburger span::after{top:5px;}
+
+.sidebar-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:30; display:none;
+}
+.sidebar-overlay.open{display:block;}
+.sidebar{
+  position:fixed; top:0; right:-300px; width:280px; max-width:82vw; height:100%;
+  background:#fff; z-index:40; box-shadow:-2px 0 12px rgba(0,0,0,.15);
+  transition:right .25s ease; overflow-y:auto; padding:16px;
+}
+.sidebar.open{right:0;}
+.sidebar-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+.sidebar-header h2{font-size:15px; margin:0;}
+.sidebar-close{background:none; border:none; font-size:22px; line-height:1; cursor:pointer; color:var(--gray); padding:0 4px;}
+.sidebar-legend{display:flex; gap:12px; font-size:11px; color:var(--gray); margin-bottom:12px; flex-wrap:wrap;}
+.sidebar-legend span{display:inline-flex; align-items:center; gap:4px;}
+.legend-dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+.legend-dot.ok{background:var(--green-bg); border:1px solid var(--green);}
+.legend-dot.no{background:var(--red-bg); border:1px solid var(--red);}
+.legend-dot.none{background:#fff; border:1px solid var(--border);}
+
+@media (max-width:480px){
+  .wrap{padding:14px 12px 40px;}
+  .card{padding:16px 14px;}
+  .qtext{font-size:16px;}
+  .option{padding:11px 12px;}
+  .option .label{font-size:14px;}
+  .actions{flex-direction:column;}
+  header h1{font-size:15px;}
+  .score{font-size:12px;}
+}
+.btn-copy{background:#fff; color:var(--blue); border:1px solid var(--blue);}
+.btn-copy:hover{background:#eaf1fe;}
+.copy-toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:#202124; color:#fff; padding:10px 18px; border-radius:20px; font-size:13px;
+  opacity:0; transition:opacity .25s; pointer-events:none; z-index:50;
+}
+.copy-toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>AI-103 · Quiz 4</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="score" id="scoreLabel">0 / 60 đúng</div>
+      <button class="hamburger" onclick="openSidebar()" aria-label="Danh sách câu hỏi"><span></span></button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</header>
+
+<div class="wrap">
+  <div id="quizArea"></div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Danh sách câu hỏi</h2>
+    <button class="sidebar-close" onclick="closeSidebar()">&times;</button>
+  </div>
+  <div class="sidebar-legend">
+    <span><span class="legend-dot ok"></span>Đúng</span>
+    <span><span class="legend-dot no"></span>Sai</span>
+    <span><span class="legend-dot none"></span>Chưa làm</span>
+  </div>
+  <div class="jumpgrid" id="jumpGrid"></div>
+</div>
+
+<div class="copy-toast" id="copyToast">Đã copy prompt vào clipboard ✓</div>
+
+<script>
+/* =========================================================
+   DATA — 60 câu hỏi AI-103
+   type: single | multi | tf | match | order | fill
+   ========================================================= */
+/* =========================================================
+   AI-103 Quiz 4 — 60 câu hỏi (Responses API, benchmark metrics,
+   orchestration patterns, MCP, speech, content understanding,
+   document intelligence)
+   type: single | multi | tf | match | order | fill
+   ========================================================= */
+const quizData = [
+{id:1, type:"single", text:"A development team needs a chat API that keeps context across multiple turns, unifies older conversational patterns into one experience, and is recommended for most new Microsoft Foundry applications. Which API best fits that requirement?",
+ options:["Chat completions API","Batch API","Responses API","Embeddings API"],
+ correct:2,
+ explain:"Responses API là API hiện đại được khuyến nghị cho hầu hết ứng dụng mới, hỗ trợ hội thoại nhiều lượt có trạng thái và gộp các pattern cũ vào 1 trải nghiệm. Chat completions API vẫn dùng được nhưng không phải lựa chọn khuyến nghị chính cho project mới. Batch API dùng cho xử lý theo lô, không phải chat tương tác. Embeddings API tạo vector cho tìm kiếm ngữ nghĩa, không quản lý hội thoại nhiều lượt."},
+
+{id:2, type:"fill", text:"Fill in the blanks about responsible AI transparency for a facial recognition system.",
+ blanks:[
+  {prefix:"A facial recognition system should clearly explain how personal data is", options:["used and retained","compressed and archived","labeled by training authority","accessed via model weights"], correct:"used and retained", suffix:","},
+  {prefix:"and who has", options:["access to it","authority over training labels","access to model weights","compression rights"], correct:"access to it", suffix:"."}
+ ],
+ explain:"Tính minh bạch yêu cầu giải thích dữ liệu cá nhân được sử dụng/lưu trữ ra sao, và ai có quyền truy cập nó. 'Compressed and archived' chỉ nói về lưu trữ, không đủ toàn diện. 'Authority over training labels' và 'access to model weights' là các khái niệm nội bộ mô hình, không liên quan tới việc truy cập dữ liệu cá nhân người dùng."},
+
+{id:3, type:"single", text:"A company is preparing governance standards for a generative AI project. Leadership wants guidance teams can directly apply during development/deployment, with responsibility shared across all contributors. Which statement best fits that goal?",
+ options:["Responsible generative AI guidance should be theoretical and used mainly by auditors after release","Responsible generative AI guidance should apply only when a system has already caused measurable harm in production","Responsible generative AI guidance should focus only on model training decisions made by researchers","Responsible generative AI guidance should be practical and actionable, and it should be followed by data scientists, developers, and others involved in creating the solution"],
+ correct:3,
+ explain:"Guidance cần thực tế/áp dụng được trong suốt vòng đời dự án và được chia sẻ cho mọi người tham gia (data scientist, developer...). Nó không nên chỉ mang tính lý thuyết sau khi phát hành, không chỉ áp dụng sau khi đã gây hại, và không chỉ giới hạn ở quyết định training của nhà nghiên cứu."},
+
+{id:4, type:"match", text:"Match each benchmark metric to its description.",
+ rows:[
+  {desc:"Average time in seconds required to process a request.", correct:"Latency mean"},
+  {desc:"Time until the first stream token is received.", correct:"Time to First Token (TTFT)"},
+  {desc:"Output tokens generated per second.", correct:"Generated Tokens Per Second (GTPS)"},
+  {desc:"Combined rate at which input and output tokens are processed.", correct:"Total Tokens Per Second (TTPS)"},
+  {desc:"A single cost figure derived by combining input and output pricing with a typical 3:1 input-to-output ratio.", correct:"Estimated cost"}
+ ],
+ pool:["Latency mean","Time to First Token (TTFT)","Generated Tokens Per Second (GTPS)","Total Tokens Per Second (TTPS)","Estimated cost","Context window","Instruction accuracy"],
+ explain:"Latency mean = thời gian xử lý trung bình; TTFT = thời gian tới token đầu tiên (ảnh hưởng cảm giác phản hồi nhanh/chậm); GTPS = tốc độ sinh output; TTPS = tốc độ xử lý tổng input+output; Estimated cost = ước tính chi phí theo tỷ lệ input:output 3:1. Context window và instruction accuracy không phải là metric benchmark tốc độ/chi phí ở đây."},
+
+{id:5, type:"tf", text:"For each statement about human evaluation of generative AI outputs, indicate True or False.",
+ statements:[
+  {text:"A structured human review of generative AI outputs can assess dimensions such as relevance, informativeness, engagement, accuracy, and safety.", answer:true},
+  {text:"Human evaluators often use a numeric rating scale such as 1 to 5 to score individual quality criteria.", answer:true},
+  {text:"User studies can uncover practical issues in production-like use that may not appear during controlled evaluation.", answer:true},
+  {text:"Manual evaluation is typically the most efficient method for scaling assessment across very large datasets while maintaining fully consistent scoring.", answer:false}
+ ],
+ explain:"1,2,3 True: human review đánh giá được nhiều khía cạnh chất lượng, thường dùng thang điểm số, và user study phát hiện vấn đề thực tế mà test có kiểm soát không thấy được. 4 False: đánh giá thủ công chậm, đắt, và khó giữ tính nhất quán khi scale lên dataset lớn — không phải phương pháp hiệu quả nhất để scale."},
+
+{id:6, type:"single", text:"A developer needs to continue a conversation so the next request is grounded in the earlier model reply, without manually rebuilding the full message history. What should the developer provide in the next call?",
+ options:["max_output_tokens","status","previous_response_id","output_text"],
+ correct:2,
+ explain:"previous_response_id liên kết request mới với response trước đó, giữ context hội thoại mà không cần dựng lại toàn bộ lịch sử message. max_output_tokens chỉ giới hạn độ dài; status chỉ mô tả trạng thái response; output_text là văn bản hiển thị, không phải định danh để nối tiếp hội thoại."},
+
+{id:7, type:"fill", text:"Fill in the blanks about enabling Python execution in the responses API.",
+ blanks:[
+  {prefix:"To enable Python execution in a responses API request, the tool type is set to", options:["code_interpreter","web_search","function","runtime"], correct:"code_interpreter", suffix:","},
+  {prefix:"and a common instruction pattern is to refer to it as the", options:["Python tool","sandbox tool","runtime tool","function tool"], correct:"Python tool", suffix:"when guiding model behavior."}
+ ],
+ explain:"Tool type dùng để chạy Python là 'code_interpreter'. Trong instruction, người ta thường gọi nó là 'Python tool' để model hiểu đó là khả năng chạy code. web_search dùng để tìm internet, function dùng gọi hàm tuỳ chỉnh, runtime/sandbox chỉ là khái niệm môi trường, không phải tên tool."},
+
+{id:8, type:"single", text:"A product manager is reviewing a trade-off chart that compares quality against throughput. How should the most desirable region of that chart generally be interpreted?",
+ options:["Models nearest the center are always the safest choice","Models nearest the top-right corner perform best on both measures","Models nearest the bottom-left corner perform best on both measures","Models nearest the right edge always have the lowest cost"],
+ correct:1,
+ explain:"Khi cả 2 trục đều 'cao hơn là tốt hơn', vùng top-right thể hiện hiệu năng kết hợp mạnh nhất trên cả 2 chỉ số. Trung tâm không tự động là an toàn nhất; bottom-left thể hiện kết quả yếu hơn; vị trí ở cạnh phải không tự suy ra được chi phí thấp nhất vì cost là chỉ số riêng."},
+
+{id:9, type:"tf", text:"For each statement about grounding and RAG, indicate True or False.",
+ statements:[
+  {text:"Grounding can improve response accuracy by connecting the model to information that is specific, current, and relevant to the user's request.", answer:true},
+  {text:"A model with no grounding data can still produce fluent answers, but those answers may include invented details.", answer:true},
+  {text:"RAG requires retraining the language model whenever business data changes.", answer:false},
+  {text:"Foundry IQ is a managed knowledge store intended to simplify grounding for AI agents.", answer:true}
+ ],
+ explain:"1,2,4 True: grounding cải thiện độ chính xác; model không grounding vẫn trôi chảy nhưng có thể bịa chi tiết; Foundry IQ là knowledge store quản lý sẵn giúp đơn giản hoá grounding. 3 False: RAG lấy dữ liệu tại thời điểm truy vấn, không cần retrain model khi dữ liệu business thay đổi."},
+
+{id:10, type:"match", text:"Match each mitigation technique to its layer in a generative AI solution.",
+ rows:[
+  {desc:"Choose a model that fits the intended task and reduce unnecessary generation risk.", correct:"Model layer"},
+  {desc:"Use platform guardrails such as content filtering and abuse detection.", correct:"Safety system layer"},
+  {desc:"Add behavioral instructions and trusted contextual data to prompts.", correct:"System message and grounding layer"},
+  {desc:"Restrict allowed inputs in the application and explain limitations clearly to users.", correct:"User experience layer"}
+ ],
+ pool:["Model layer","Safety system layer","System message and grounding layer","User experience layer","Network perimeter layer","Billing optimization layer"],
+ explain:"Model layer = chọn model phù hợp; Safety system layer = guardrail nền tảng (content filter, abuse detection); System message/grounding layer = hướng dẫn hành vi + dữ liệu tin cậy trong prompt; User experience layer = giới hạn input và giải thích rõ hạn chế cho người dùng. Network perimeter và billing optimization không phải là các lớp giảm thiểu harm được định nghĩa ở đây."},
+
+{id:11, type:"single", text:"A developer is building an asynchronous service that streams model events as they are generated and must process each event immediately as it arrives. Which control structure should be used to read events from the stream?",
+ options:["for each await","yield from","while not done","async for"],
+ correct:3,
+ explain:"'async for' là cấu trúc Python chuẩn để lặp qua async iterator (ví dụ stream event), xử lý ngay khi có event mới. 'while not done' chỉ là ý tưởng loop chung, 'yield from' liên quan tới generator delegation, 'for each await' không phải cú pháp Python hợp lệ."},
+
+{id:12, type:"tf", text:"For each statement about development tools (VS Code, GitHub), indicate True or False.",
+ statements:[
+  {text:"The AI Toolkit extension for Visual Studio Code can be used to browse and manage project connections and vector stores in addition to models and agents.", answer:true},
+  {text:"GitHub is limited to personal code storage and is not important in team-based development workflows.", answer:false},
+  {text:"Both Microsoft Visual Studio and Visual Studio Code provide native integration with GitHub.", answer:true},
+  {text:"Access to GitHub Copilot is available only from Visual Studio Code and not from Microsoft Visual Studio.", answer:false}
+ ],
+ explain:"1&3 True. 2 False: GitHub hỗ trợ collaborative source control và DevOps cho team, không chỉ lưu code cá nhân. 4 False: GitHub Copilot có sẵn ở cả Visual Studio và Visual Studio Code, không giới hạn 1 editor."},
+
+{id:13, type:"multi", text:"A team wants to manage an already-deployed model from the portal, opening the deployment list and checking what's available in the deployment details view. Which three statements are correct?", note:"Chọn 3 đáp án",
+ options:["A deployed model can be managed only from the playground interface","Deployed models are managed from the Build section of the portal","To see the deployment list for a resource, the user selects Build and then Models","Deployment details can include an option to adjust deployment settings","Deployment management is performed only from the model leaderboard"],
+ correct:[1,2,3],
+ explain:"Model đã deploy được quản lý từ mục Build của portal; xem danh sách deployment bằng Build → Models; deployment details có thể cho phép chỉnh cài đặt deployment. Playground chủ yếu để test tương tác, không phải nơi quản lý duy nhất; model leaderboard chỉ để so sánh model, không phải nơi vận hành deployment."},
+
+{id:14, type:"order", text:"Arrange the steps of a retrieval augmented generation (RAG) workflow in the correct order.",
+ correctOrder:["Retrieve relevant information from a data source","Add the retrieved information to the prompt","Send the enriched prompt to the model for answer generation"],
+ explain:"RAG bắt đầu bằng việc lấy thông tin liên quan từ nguồn dữ liệu → thêm thông tin đó vào prompt → gửi prompt đã bổ sung cho model để sinh câu trả lời có grounding."},
+
+{id:15, type:"single", text:"A team wants an automated evaluator that can score outputs for criteria such as quality and safety, without relying only on mathematical text-overlap formulas. What additional configuration is required when using AI-assisted evaluation?",
+ options:["Disable all system prompts before scoring","Select a VM SKU for the evaluator","Specify a GPT model that performs the assessment","Provide only endpoint latency percentiles"],
+ correct:2,
+ explain:"AI-assisted evaluation dùng 1 GPT model làm evaluator để phân tích và chấm điểm output theo tiêu chí như quality/safety. Tắt system prompt, chọn VM SKU, hay chỉ cung cấp latency percentile không phải cấu hình cần thiết cho phương pháp này."},
+
+{id:16, type:"single", text:"A team is expanding a function calling design and wants to support more than one callable operation. Which statement is accurate?",
+ options:["A function-enabled setup is limited to one function and that function cannot accept parameters","Functions with parameters cannot be used because only parameterless utility calls are supported","Multiple functions are allowed only when all of them share the same fixed parameter list","A function-enabled setup can expose multiple functions, and they may be defined with or without parameters"],
+ correct:3,
+ explain:"Có thể khai báo nhiều function, mỗi function có thể có hoặc không có parameter, và các function không cần dùng chung 1 danh sách parameter cố định."},
+
+{id:17, type:"single", text:"A user asks 'Which hotels do you offer in Paris?' The model answers with hotel names that sound believable but do not exist in the company's catalog. What is the clearest reason this can happen when no grounding data is supplied?",
+ options:["The model can only respond correctly to questions about cities, not hotels","The model always requires a vector database before it can generate text","The model relies only on training data and may produce plausible but fabricated details","The model is unable to process travel-related questions without fine-tuning"],
+ correct:2,
+ explain:"Không có grounding, model chỉ dựa vào kiến thức training, có thể sinh chi tiết nghe hợp lý nhưng bịa (hallucination) vì không được neo vào catalog thực tế của công ty."},
+
+{id:18, type:"single", text:"A retail assistant has already been fine-tuned to use the company's brand voice. During a holiday campaign, the business wants each conversation to prioritize a seasonal promotion without retraining the model. Which additional strategy is most appropriate?",
+ options:["Embedding compression","Model distillation","Vector search","Prompt engineering"],
+ correct:3,
+ explain:"Prompt engineering có thể thêm hướng dẫn/ưu tiên tạm thời (ví dụ ưu tiên promotion mùa lễ) lên trên model đã fine-tune sẵn, không cần retrain. Embedding compression và model distillation không liên quan tới việc định hướng hội thoại tạm thời; vector search hữu ích cho truy xuất thông tin, không phải công cụ chính để ưu tiên nội dung quảng bá."},
+
+{id:19, type:"tf", text:"For each statement about the Microsoft Foundry extension in VS Code, indicate True or False.",
+ statements:[
+  {text:"After the Microsoft Foundry extension is installed in Visual Studio Code, its icon is available in the activity bar on the left side of the editor.", answer:true},
+  {text:"A user can connect Visual Studio Code to Azure for Foundry work by selecting the Azure icon in the activity bar and completing sign-in when prompted.", answer:true},
+  {text:"To open an Azure AI Foundry project in the Visual Studio Code extension, the user selects the project and chooses 'Open in Foundry extension'.", answer:true},
+  {text:"After a Foundry project is connected in Visual Studio Code, model deployments and vector stores remain hidden until an agent is deployed.", answer:false}
+ ],
+ explain:"1,2,3 True. 4 False: sau khi kết nối project, các resource như agent, model deployment, connection, vector store đều có thể hiện sẵn — không cần deploy agent trước mới thấy được."},
+
+{id:20, type:"match", text:"Match each task to the correct configuration location for an invoked agent in a workflow.",
+ rows:[
+  {desc:"Define the response schema for structured output.", correct:"Details tab parameters"},
+  {desc:"Configure storage of the agent's output in a variable.", correct:"Action settings"}
+ ],
+ pool:["Details tab parameters","Action settings","End node result pane","Canvas layout editor"],
+ explain:"Details tab parameters là nơi định nghĩa schema structured output. Action settings là nơi lưu output agent vào biến để dùng ở bước sau. End node result pane chỉ dùng để kết thúc workflow; canvas layout editor chỉ thay đổi bố cục hiển thị, không cấu hình schema hay biến."},
+
+{id:21, type:"fill", text:"Fill in the blanks about registering custom Python tools.",
+ blanks:[
+  {prefix:"A custom Python function can be registered as a tool by applying the", options:["@tool decorator","agent session","web search","Azure key credential"], correct:"@tool decorator", suffix:","},
+  {prefix:"and detailed parameter descriptions can be added by using Annotated together with", options:["Pydantic field metadata","thread reuse","web search metadata","Azure key credential"], correct:"Pydantic field metadata", suffix:"."}
+ ],
+ explain:"@tool decorator đăng ký function Python thành tool cho agent dùng. Annotated kết hợp Pydantic field metadata giúp mô tả rõ từng parameter để agent hiểu cách gọi. Agent session/thread reuse chỉ quản lý context hội thoại; web search là 1 tool có sẵn khác; Azure key credential dùng cho xác thực — không liên quan việc đăng ký tool."},
+
+{id:22, type:"match", text:"Match each Microsoft Agent Framework concept to its description.",
+ rows:[
+  {desc:"Open-source SDK for integrating AI models into applications.", correct:"Microsoft Agent Framework"},
+  {desc:"Shared abstraction for connecting to AI services from different providers.", correct:"Chat clients"},
+  {desc:"Maintains conversation history across multiple interactions.", correct:"Agent session"},
+  {desc:"Built-in capability for retrieving information from internet sources.", correct:"Web search"},
+  {desc:"Structured role used when returning the output of a tool call.", correct:"Tool"}
+ ],
+ pool:["Microsoft Agent Framework","Chat clients","Agent session","Web search","Tool","Code interpreter","Microsoft Foundry Agent Service"],
+ explain:"Microsoft Agent Framework = SDK mã nguồn mở để tích hợp model vào ứng dụng; Chat clients = lớp abstraction kết nối nhiều nhà cung cấp AI; Agent session = duy trì lịch sử hội thoại; Web search = tool tìm kiếm internet có sẵn; Tool = role dùng khi trả kết quả gọi tool. Code interpreter là tool chạy code cụ thể, không phải các khái niệm trên; Foundry Agent Service là dịch vụ tích hợp được, không phải SDK/tool/session ở đây."},
+
+{id:23, type:"fill", text:"Fill in the blanks about building and reading a concurrent multi-agent workflow.",
+ blanks:[
+  {prefix:"When implementing a parallel multi-agent workflow, the developer uses", options:["concurrent builder","agent session","create thread","approval mode"], correct:"concurrent builder", suffix:"to create the workflow,"},
+  {prefix:"and can extract result messages from workflow events by calling", options:["get_outputs","build_agent","create_thread","approval_mode"], correct:"get_outputs", suffix:"."}
+ ],
+ explain:"Concurrent builder dùng để xây workflow chạy nhiều agent song song. get_outputs dùng để lấy message kết quả từ các event của workflow sau khi chạy. Agent session/create thread quản lý hội thoại, không phải xây dựng workflow song song; approval mode/build_agent không phải phương thức lấy output ở đây."},
+
+{id:24, type:"fill", text:"Fill in the blanks about a routing workflow with shared state and case matching.",
+ blanks:[
+  {prefix:"In a routing workflow, an", options:["input storage executor","terminal executor","concurrent participant","final conversation thread"], correct:"input storage executor", suffix:"can save incoming data to shared state before forwarding it for classification,"},
+  {prefix:"and the workflow then follows the", options:["first matching case","last matching case","concurrent case","terminal case"], correct:"first matching case", suffix:"before using any fallback path."}
+ ],
+ explain:"Input storage executor lưu dữ liệu vào shared state trước khi chuyển đi phân loại. Workflow chọn case khớp đầu tiên (first matching case) trước khi dùng tới fallback. Terminal executor chỉ dùng ở cuối workflow; concurrent participant thuộc pattern song song; final conversation thread chỉ là bản ghi hội thoại, không phải cơ chế routing."},
+
+{id:25, type:"single", text:"A company wants software that can interpret user intent, decide the next step, and carry out actions such as retrieving information or triggering tools without being limited to a rigid set of predefined rules. What type of software best fits this requirement?",
+ options:["A traditional rules-based application","An AI agent","A static reporting dashboard","A batch processing script"],
+ correct:1,
+ explain:"AI agent được thiết kế để hiểu ngữ cảnh, diễn giải ý định, quyết định và hành động (dùng tool, truy xuất thông tin) — phù hợp khi hệ thống cần thích ứng thay vì chỉ theo rule cố định. Rule-based app theo logic định trước; dashboard chỉ hiển thị; batch script chạy các bước cố định, không tự chọn hành động."},
+
+{id:26, type:"single", text:"A developer wants to create a new AI agent in Microsoft Foundry by using the portal interface. Which navigation path correctly opens the area used to start agent creation?",
+ options:["Build → Tools","Build → Agents","Project settings → Models","Monitor → Deployments"],
+ correct:1,
+ explain:"Build → Agents là khu vực đúng để tạo agent mới, sau đó chọn Create để nhập thông tin agent. Build → Tools dùng cho tool, không phải khởi tạo agent; Project settings → Models liên quan tới cấu hình model; Monitor → Deployments dùng để theo dõi sau khi deploy, không phải tạo agent."},
+
+{id:27, type:"multi", text:"A developer is configuring an OpenAPI-based tool for an agent and needs to choose from the authentication methods supported for that tool type. Which three authentication options are supported?", note:"Chọn 3 đáp án",
+ options:["Managed identity","Basic authentication","Anonymous","OAuth 1.0a","API key"],
+ correct:[0,2,4],
+ explain:"Managed identity, Anonymous, và API key được hỗ trợ cho OpenAPI-based tool. Basic authentication (username/password) và OAuth 1.0a không thuộc bộ tuỳ chọn xác thực được hỗ trợ ở đây."},
+
+{id:28, type:"single", text:"A business has many teams exposing different APIs and services, and those tool sets evolve frequently. Why is MCP-based dynamic discovery especially useful in that environment?",
+ options:["It allows agents to adapt to changing capabilities in real time while securely using external systems","It removes the need for any external systems by moving every tool into the model itself","It guarantees that tool definitions never change after deployment","It requires each team to hardcode every tool in every agent for consistency"],
+ correct:0,
+ explain:"Dynamic discovery giúp agent thích ứng với capability thay đổi liên tục mà không cần cập nhật hard-code lặp lại, vẫn tương tác an toàn với hệ thống ngoài. Nó không loại bỏ nhu cầu hệ thống ngoài, không đóng băng tool definition mãi mãi, và không yêu cầu hard-code mọi tool vào từng agent — ngược lại, nó giúp tránh việc đó."},
+
+{id:29, type:"tf", text:"For each statement about MCP tool discovery and function tools, indicate True or False.",
+ statements:[
+  {text:"Tool definitions on an MCP server can be served over HTTP for a client to retrieve.", answer:true},
+  {text:"A standard MCP client replaces the agent and handles user conversations directly instead of passing tools to the agent.", answer:false},
+  {text:"After discovery, wrapped tool functions can be bundled into a function tool for agent use.", answer:true},
+  {text:"Once the function tool is registered to the agent's tool set, the tools can be available during runtime for user requests.", answer:true}
+ ],
+ explain:"1,3,4 True. 2 False: MCP client không thay thế agent hay tự xử lý hội thoại người dùng — nó chỉ là cầu nối giữa server MCP và agent."},
+
+{id:30, type:"tf", text:"For each statement about handoff orchestration, indicate True or False.",
+ statements:[
+  {text:"In handoff orchestration, multiple agents usually process the same task simultaneously and merge their outputs afterward.", answer:false},
+  {text:"A routing workflow can inspect classification results and decide which specialized handler should run next.", answer:true},
+  {text:"Handler executors can use guard conditions to verify that the incoming message matches the expected classification outcome.", answer:true},
+  {text:"A handoff design should include protection against endless transfers between agents.", answer:true}
+ ],
+ explain:"1 False: handoff chuyển quyền kiểm soát cho từng agent một (không phải nhiều agent cùng xử lý và merge). 2,3,4 True: routing dùng kết quả phân loại để chọn handler; guard condition xác nhận message khớp đúng classification; cần chống lặp chuyển giao vô hạn giữa các agent."},
+
+{id:31, type:"single", text:"A development team wants an AI agent to work with a REST-based external service using a standardized contract that documents the API and supports automation tasks such as client generation and testing. Which custom tool option is the best fit?",
+ options:["Azure Functions","Function calling","OpenAPI specification tools","Azure Logic Apps"],
+ correct:2,
+ explain:"OpenAPI specification tools dùng định nghĩa OpenAPI để mô tả API REST theo chuẩn, hỗ trợ tạo client, test, và documentation. Azure Functions dành cho serverless event-driven code; function calling gọi hàm tuỳ chỉnh nhưng không cung cấp mô hình document API chuẩn; Azure Logic Apps dùng cho automation low-code, không phải để định nghĩa contract API."},
+
+{id:32, type:"single", text:"A solution architect wants to combine more than one custom tool pattern in a single agent design. What is the main benefit of doing so?",
+ options:["It prevents the agent from interacting with external systems so responses remain fully isolated","It allows the solution to support external integrations, real-time processing, and scalable workflows in the same agent design","It guarantees that no function definitions or API descriptions are needed","It forces every workflow to be implemented through the same mechanism for consistency"],
+ correct:1,
+ explain:"Kết hợp nhiều pattern tool cho phép agent vừa tích hợp hệ thống ngoài, vừa xử lý real-time, vừa chạy workflow có thể scale — mỗi pattern phục vụ mục đích khác nhau. Nó không cô lập agent khỏi hệ thống ngoài, vẫn cần định nghĩa function/API, và không ép mọi workflow dùng cùng 1 cơ chế."},
+
+{id:33, type:"single", text:"A team wants an architecture where the server exposes functions as tools, the client retrieves them, and the agent receives tool definitions generated from that discovery process. What happens immediately after the client fetches the tools?",
+ options:["The client generates function wrappers that are added to the agent's tool definitions","The server compiles a new language model for each tool call","The agent deletes older prompts so tool metadata can fit into memory","The client disables all external integrations until a manual approval step is completed"],
+ correct:0,
+ explain:"Sau khi client lấy được tool, nó tạo function wrapper và thêm vào tool definition của agent. Server không tự compile lại model cho mỗi lần gọi tool; agent không xoá prompt cũ để nhường chỗ; client không tự động tắt integration chờ approval — mục tiêu là discovery và truy cập linh hoạt."},
+
+{id:34, type:"single", text:"A product team wants three specialized agents to analyze the same customer issue at once — technical, business, and creative perspectives — for faster turnaround and broader ideas before choosing a final recommendation. Which orchestration pattern is the best fit?",
+ options:["Sequential orchestration","Concurrent orchestration","A single-agent workflow with no tool access","A fixed rules engine with no agent collaboration"],
+ correct:1,
+ explain:"Concurrent orchestration cho phép nhiều agent chuyên biệt xử lý cùng lúc trên cùng 1 vấn đề — phù hợp cho turnaround nhanh và đa góc nhìn. Sequential chạy tuần tự (không parallel); single-agent không cung cấp nhiều góc nhìn cùng lúc; rules engine không hỗ trợ collaboration giữa agent."},
+
+{id:35, type:"single", text:"A support system starts with a general intake agent. As the conversation progresses, one issue is recognized as billing-related and another as technical troubleshooting. The system must transfer control to the most suitable specialist when the need becomes clear. Which orchestration pattern best fits?",
+ options:["Sequential orchestration","Concurrent orchestration","Handoff orchestration","A fixed single-agent workflow"],
+ correct:2,
+ explain:"Handoff orchestration phù hợp khi bắt đầu với 1 agent tổng quát rồi chuyển động sang chuyên gia phù hợp khi nhu cầu trở nên rõ ràng. Sequential cần thứ tự cố định trước; concurrent dành cho nhiều agent chạy cùng lúc, không phải chuyển giao lần lượt; single-agent workflow không hỗ trợ chuyển giao động."},
+
+{id:36, type:"single", text:"A team is evaluating whether to use Magentic orchestration for a routine task that already has a fixed procedure, does not need a documented plan, and must finish as quickly as possible. What is the best recommendation?",
+ options:["Use Magentic orchestration because detailed planning always improves simple deterministic tasks","Avoid Magentic orchestration only when no chat client is available","Use Magentic orchestration only if all agents run in parallel before planning starts","Avoid Magentic orchestration because the task is fixed, lightweight, and speed-sensitive"],
+ correct:3,
+ explain:"Magentic orchestration phù hợp cho task phức tạp/biến động cần planning và điều phối — không cần thiết (và tốn overhead) cho task đã cố định, nhẹ, và cần nhanh. Planning chi tiết không tự động cải thiện task đơn giản đã xác định; sự có/không chat client hay việc chạy song song trước khi plan không phải yếu tố quyết định."},
+
+{id:37, type:"single", text:"A workflow needs to choose different paths when conditions change, jump to a different step, or repeat the same action for multiple items in a list. Which node category provides these capabilities?",
+ options:["Data transformation","Flow","Basic chat","End"],
+ correct:1,
+ explain:"Flow node kiểm soát hành vi thực thi workflow: branching theo điều kiện, jump sang step khác, và loop qua danh sách item. Data transformation chỉ thay đổi giá trị/biến; basic chat dùng cho tương tác message; end chỉ đánh dấu kết thúc, không quản lý nhánh/lặp."},
+
+{id:38, type:"multi", text:"A solutions architect is adding an agent step to an AI workflow and must configure the agent's runtime behavior without changing the workflow's node sequence. Which four settings can be configured in the invoke agent editor?", note:"Chọn 4 đáp án",
+ options:["Tools","Execution order of all nodes in the workflow","Knowledge base","Memory","Guardrails"],
+ correct:[0,2,3,4],
+ explain:"Trong invoke agent editor có thể cấu hình: tools (gọi khả năng ngoài), knowledge base (nguồn kiến thức grounding), memory (cách agent lưu context), và guardrails (ràng buộc an toàn). Execution order của toàn bộ node workflow thuộc thiết kế workflow tổng thể, không phải setting riêng của agent."},
+
+{id:39, type:"single", text:"A workflow designer is considering concurrent orchestration for a process that must deliver the same repeatable output every time, follow a strict series of steps, and stay within a tight model usage quota. What is the best recommendation?",
+ options:["Use concurrent orchestration because independent agents improve determinism","Avoid concurrent orchestration because the task has sequence, repeatability, and resource constraints","Use concurrent orchestration only if all agents share intermediate outputs continuously","Avoid concurrent orchestration only when no tools are involved"],
+ correct:1,
+ explain:"Vì cần thứ tự nghiêm ngặt, kết quả lặp lại y hệt, và quota giới hạn chặt, nên tránh concurrent orchestration — chạy song song thêm biến động và tốn nhiều tài nguyên model hơn. Agent độc lập không tự cải thiện determinism; chia sẻ output liên tục không phải điều kiện bắt buộc của concurrent; yếu tố quyết định ở đây là sequencing/repeatability/resource, không phải việc có tool hay không."},
+
+{id:40, type:"fill", text:"Fill in the blanks about creating an Azure Language client with key-based authentication.",
+ blanks:[
+  {prefix:"When using the Python SDK for Azure Language/Foundry Tools with key-based authentication, the client is typically created by passing an", options:["Azure key credential","default Azure credential","subscription ID","tenant secret"], correct:"Azure key credential", suffix:"object"},
+  {prefix:"and the resource endpoint into", options:["TextAnalyticsClient","DefaultAzureCredential","Subscription client","Region client"], correct:"TextAnalyticsClient", suffix:"."}
+ ],
+ explain:"Khi xác thực bằng key, cần tạo Azure key credential object cùng resource endpoint, truyền vào TextAnalyticsClient. Default Azure credential dùng cho identity-based auth, không phải key-based; subscription ID/tenant secret/region name không đủ để đóng vai trò credential object hay endpoint đầy đủ."},
+
+{id:41, type:"fill", text:"Fill in the blanks about interpreting language detection confidence scores.",
+ blanks:[
+  {prefix:"The service returns a confidence score for the detected language, expressed as a value between", options:["0 and 1","0 and 10","0 and 100","-1 and 1"], correct:"0 and 1", suffix:","},
+  {prefix:"and scores closer to", options:["1 indicate greater confidence","0 indicate greater confidence","10 indicate greater confidence","-1 indicate greater confidence"], correct:"1 indicate greater confidence", suffix:"in the detected language."}
+ ],
+ explain:"Confidence score của language detection nằm trong khoảng 0 đến 1, và giá trị gần 1 nghĩa là độ tin cậy cao hơn — không phải thang 0-10, 0-100, hay giá trị âm."},
+
+{id:42, type:"match", text:"Match each Azure Speech MCP server concept to its description.",
+ rows:[
+  {desc:"The application environment that runs an AI agent and provides the overall execution context.", correct:"Host"},
+  {desc:"The component inside the host that manages communication with external tool servers.", correct:"Client"},
+  {desc:"The program that publishes tools, resources, and prompts for an agent to discover and invoke.", correct:"Server"},
+  {desc:"The behavior in which an agent checks available tool definitions at runtime instead of relying on fixed tooling.", correct:"Dynamic tool discovery"},
+  {desc:"The design benefit that allows tool definitions to change on the server without requiring changes to the agent itself.", correct:"Flexibility and maintainability"}
+ ],
+ pool:["Host","Client","Server","Dynamic tool discovery","Flexibility and maintainability"],
+ explain:"Host = môi trường ứng dụng chạy agent; Client = thành phần trong host quản lý giao tiếp với server ngoài; Server = nơi công bố tool/resource/prompt để agent khám phá; Dynamic tool discovery = agent kiểm tra tool khả dụng tại runtime; Flexibility and maintainability = lợi ích cho phép đổi tool ở server mà không cần sửa agent."},
+
+{id:43, type:"multi", text:"A project lead is preparing an environment so an AI agent can use speech tools for audio-based workflows. Which prerequisites must be available before that integration can be completed?", note:"Chọn 2 đáp án",
+ options:["A custom speech routing script written in advance","A SQL database for storing transcript metadata","An Azure subscription","A Foundry resource and project with appropriate access on the resource group","An Azure storage account with a blob container"],
+ correct:[2,4],
+ explain:"Cần Azure subscription (để cấp phát resource) và Azure storage account với blob container (để lưu audio input/output). SQL database và custom routing script không bắt buộc để kết nối agent với speech tool. (Lưu ý: transcript gốc chỉ liệt kê 2 đáp án đúng là C và E dù đề bài ghi 'select three answers'.)"},
+
+{id:44, type:"tf", text:"For each statement about MCP and secure speech configuration, indicate True or False.",
+ statements:[
+  {text:"The Model Context Protocol (MCP) enables an AI agent to interact with external tools, data sources, and services through a standardized interface.", answer:true},
+  {text:"When an AI agent connects to an MCP server, the server can provide tool metadata such as names and descriptions to help the agent choose the appropriate capability.", answer:true},
+  {text:"Establishing a speech server connection may require both a service credential and storage access information depending on the configuration.", answer:true},
+  {text:"Embedding keys or SAS URLs directly in scripts or shared documentation is a security risk and should be avoided.", answer:true}
+ ],
+ explain:"Cả 4 phát biểu đều True: MCP chuẩn hoá cách agent truy cập tool/data/service ngoài; server cung cấp metadata tool để agent chọn đúng capability; kết nối speech server có thể cần cả credential dịch vụ và thông tin truy cập storage; nhúng key/SAS URL trực tiếp vào code/document là rủi ro an ninh cần tránh."},
+
+{id:45, type:"single", text:"A solution architect is evaluating an agent-based design for a live voice application and wants to understand how it simplifies client integration compared with a lower-level connection approach. What is the primary simplification provided by the agent-based approach?",
+ options:["The agent converts all audio devices into managed cloud resources","The agent automatically eliminates the need for authentication","The agent ID is used to connect, and the needed settings are handled internally","The agent removes the need for event processing in the client"],
+ correct:2,
+ explain:"Với agent-based approach, client chỉ cần dùng agent ID để kết nối, các cấu hình liên quan được xử lý nội bộ trong agent — giảm độ phức tạp thiết lập phía client. Nó không biến thiết bị audio thành cloud resource, không loại bỏ nhu cầu xác thực, và client vẫn cần xử lý event (transcript, audio input, response)."},
+
+{id:46, type:"single", text:"A model catalog contains generative AI models from several providers. A user wants to locate a model suitable for speech workloads inside the portal. What is the most direct way to narrow the available choices?",
+ options:["Sort the models only by publication date","Use the portal's filter and search features","Use the first model listed in the catalog","Limit the selection to models built for image generation"],
+ correct:1,
+ explain:"Filter và search feature của portal là cách trực tiếp nhất để thu hẹp lựa chọn theo capability (như speech). Sắp xếp theo ngày phát hành không xác nhận khả năng speech; chọn model đầu tiên không đáng tin cậy; giới hạn ở model image generation là sai hướng vì đó là nhóm model cho ảnh, không phải giọng nói."},
+
+{id:47, type:"single", text:"A developer sends written text to a model and receives back an audio stream containing spoken output. What operation is being performed?",
+ options:["Speech transcription","Text classification","Speaker diarization","Speech synthesis"],
+ correct:3,
+ explain:"Speech synthesis chuyển văn bản thành audio nói — đúng với luồng input text/output audio. Speech transcription làm ngược lại (audio→text); text classification gán nhãn/category cho text, không tạo audio; speaker diarization nhận diện/phân tách người nói trong audio, không liên quan tới việc tạo giọng nói từ text."},
+
+{id:48, type:"single", text:"An application needs to submit requests to Azure Speech APIs through a Microsoft Foundry resource. What must be provisioned first in the Azure subscription before the application can use those speech capabilities?",
+ options:["An Azure Virtual Network","A storage account with blob containers","A Microsoft Foundry resource","A separate speech-only region object"],
+ correct:2,
+ explain:"Speech capability qua Foundry Tools được cung cấp thông qua Microsoft Foundry resource, nên resource này phải tồn tại trước. Virtual network hay storage account có thể hữu ích cho một số workflow nhưng không phải yêu cầu chính; không có khái niệm 'speech-only region object' riêng biệt trong mô hình provisioning này."},
+
+{id:49, type:"single", text:"A developer is configuring a Voice Live API application and must choose between PCM16 and G711 for audio handling. What broader capability does this choice represent?",
+ options:["Selection of supported real-time audio formats for processing","Selection of token scope for Microsoft Entra authentication","Selection of WebRTC codec negotiation for avatar video only","Selection of server event categories for conversation updates"],
+ correct:0,
+ explain:"PCM16 và G711 là các audio format được hỗ trợ cho xử lý audio thời gian thực — việc chọn giữa chúng quyết định cách dữ liệu audio được mã hoá/truyền/xử lý. Nó không liên quan tới token scope xác thực, codec video avatar, hay category của server event."},
+
+{id:50, type:"single", text:"A team needs speech-to-speech translation into multiple target languages and wants a method that can speak each translated result through the default speaker. Which approach should they use?",
+ options:["Event-based synthesis","Manual synthesis","Supported languages lookup","Transliteration"],
+ correct:1,
+ explain:"Manual synthesis cho phép tổng hợp giọng nói riêng cho từng bản dịch ngôn ngữ đích và phát qua speaker mặc định. Event-based synthesis không phù hợp cho nhiều bản dịch cùng lúc; supported languages lookup chỉ lấy metadata ngôn ngữ, không tạo audio; transliteration chỉ đổi cách biểu diễn chữ viết, không tạo giọng nói dịch."},
+
+{id:51, type:"tf", text:"For each statement about extraction confidence scores and output formats, indicate True or False.",
+ statements:[
+  {text:"A confidence score greater than 0.9 is often appropriate for fully automated processing in a production workflow.", answer:true},
+  {text:"A confidence score lower than 0.7 is typically an indication that manual review or verification should be considered.", answer:true},
+  {text:"Grounding information identifies the region of the source image associated with an extracted value.", answer:true},
+  {text:"Markdown output is intended only for numeric computation workflows and is not appropriate for retrieval-based scenarios.", answer:false}
+ ],
+ explain:"1,2,3 True: điểm tin cậy cao (>0.9) phù hợp xử lý tự động; điểm thấp (<0.7) nên xem xét review thủ công; grounding info liên kết giá trị trích xuất với vùng ảnh nguồn. 4 False: markdown output hữu ích cho cả trình bày dễ đọc và các tình huống retrieval/search, không chỉ dành cho tính toán số."},
+
+{id:52, type:"single", text:"A company plans to adopt Azure Content Understanding for an internal application. Before developers can start building analyzers, what must be provisioned in the Azure subscription?",
+ options:["An Azure Firewall policy","A Microsoft Entra Domain Services instance","An Azure Load Balancer","A Microsoft Foundry resource"],
+ correct:3,
+ explain:"Azure Content Understanding được cung cấp qua Microsoft Foundry, nên cần có Foundry resource trước khi xây analyzer. Firewall policy chỉ kiểm soát network rule; Entra Domain Services cung cấp domain service quản lý, không liên quan; load balancer phân phối traffic, không phải điều kiện tiên quyết để tạo analyzer."},
+
+{id:53, type:"match", text:"Match each Azure Content Understanding preparation task to its description.",
+ rows:[
+  {desc:"Provides the service connection URL used by a client application.", correct:"Microsoft Foundry resource endpoint"},
+  {desc:"Can be used to authenticate requests sent to the service endpoint.", correct:"API key"},
+  {desc:"Makes visual tools available for building schemas and analyzers.", correct:"Microsoft Foundry project"},
+  {desc:"Can be used by code in a project-based workflow to obtain connection details through Microsoft Entra ID.", correct:"Microsoft Foundry SDK"},
+  {desc:"Required Azure resource that must exist before the API can be used.", correct:"Microsoft Foundry resource"}
+ ],
+ pool:["Microsoft Foundry resource endpoint","API key","Microsoft Foundry project","Microsoft Foundry SDK","Microsoft Foundry resource"],
+ explain:"Resource endpoint cung cấp URL kết nối; API key dùng xác thực request; Foundry project cấp công cụ visual để build schema/analyzer; Foundry SDK cho phép code lấy connection detail qua Entra ID; Foundry resource là resource Azure bắt buộc phải tồn tại trước khi dùng API."},
+
+{id:54, type:"single", text:"A developer already has a trained custom model and wants to use it from application code. What is required at analysis time?",
+ options:["Use only a classifier because extraction models cannot be invoked directly","Create a new labels JSON file for each document submitted for inference","Call the build model function again for every new document","Call the analyze document function and provide the model ID"],
+ correct:3,
+ explain:"Sau khi train, dùng model bằng cách gọi analyze document function kèm model ID để service biết model nào xử lý document mới. Extraction model có thể gọi trực tiếp; labels JSON chỉ cần cho lúc training, không phải mỗi lần phân tích; không cần build lại model cho từng document mới."},
+
+{id:55, type:"fill", text:"Fill in the blanks about search index field attributes.",
+ blanks:[
+  {prefix:"A field marked as", options:["filterable","encrypted","replicated","normalized"], correct:"filterable", suffix:"can be used in filter expressions,"},
+  {prefix:"while a field marked as", options:["sortable","throttled","replicated","encrypted"], correct:"sortable", suffix:"can be used to order results."}
+ ],
+ explain:"Filterable cho phép field dùng trong biểu thức lọc; sortable cho phép dùng để sắp xếp kết quả. Encrypted/replicated/normalized/throttled là các thuộc tính về bảo mật, khả dụng, xử lý ngôn ngữ, hoặc giới hạn tài nguyên — không liên quan tới hành vi filter/sort của field."},
+
+{id:56, type:"order", text:"Arrange the stages of search query processing in the correct order.",
+ correctOrder:["Query parsing","Lexical analysis","Document retrieval","Scoring"],
+ explain:"Query parsing (diễn giải biểu thức tìm kiếm) → lexical analysis (chuẩn hoá từ, stop word, stemming) → document retrieval (khớp với nội dung đã index) → scoring (tính điểm liên quan để xếp hạng kết quả)."},
+
+{id:57, type:"multi", text:"A retail operations team wants to analyze product photos and return: the product name exactly as shown on packaging, a status chosen from a fixed set (new/damaged), and a short natural-language summary of the scene. Which combination of extraction methods should the team configure?", note:"Chọn 3 đáp án",
+ options:["Extract","Segment","Classify","Generate"],
+ correct:[0,2,3],
+ explain:"Extract lấy tên sản phẩm trực tiếp từ text trên bao bì; Classify chọn status từ danh sách cố định (new/damaged); Generate tạo mô tả ngôn ngữ tự nhiên cho cảnh. Segment dùng để phân chia/tổ chức nội dung xử lý, không phải 1 trong 3 phương pháp cần cho các output này."},
+
+{id:58, type:"single", text:"A document processing team notices that some fields are not extracted consistently enough for production use. What action can improve analyzer performance for those fields?",
+ options:["Avoid using any sample files during design","Delete the schema and rely only on the analyzer endpoint","Explicitly label the fields in the sample content","Replace the Foundry resource with a storage account"],
+ correct:2,
+ explain:"Gắn label rõ ràng cho field trong sample content giúp định hướng analyzer trích xuất đúng giá trị mong muốn khi mapping tự động chưa đủ ổn định. Tránh dùng sample file, xoá schema, hay thay resource bằng storage account đều không cải thiện — thậm chí làm mất công cụ cần thiết để analyzer hoạt động."},
+
+{id:59, type:"single", text:"A developer needs to create a custom analyzer for extracting business card details, wanting the fastest path for day-to-day design/testing while keeping API-based creation available when needed. What approach best fits that goal?",
+ options:["Use a storage account wizard because analyzer definitions cannot include schema fields directly","Use only the REST API because analyzers cannot be tested visually","Use Content Understanding Studio for most analyzer design and testing, and use the API when a JSON schema definition is needed","Use the Python SDK only after the analyzer has already been created manually in code"],
+ correct:2,
+ explain:"Content Understanding Studio phù hợp nhất cho thiết kế/test hàng ngày nhờ giao diện trực quan; API vẫn hữu ích khi cần setup bằng code hoặc định nghĩa JSON schema cụ thể. Analyzer definition vẫn có thể chứa field schema trực tiếp; việc test trực quan hoàn toàn được hỗ trợ; Python SDK có thể tạo analyzer trực tiếp, không chỉ dùng sau khi đã tạo thủ công."},
+
+{id:60, type:"multi", text:"A team is reviewing candidate files before submitting them to Azure Document Intelligence and wants to confirm which ones satisfy supported input requirements. Which three files are valid inputs?", note:"Chọn 3 đáp án",
+ options:["A 300 MB TIFF image in the standard tier","A 12,000 x 12,000 pixel PNG image","A 3 MB scanned PDF in the free tier","A password-protected PDF","A Microsoft Office file submitted to the Read model"],
+ correct:[0,2,4],
+ explain:"TIFF 300MB ở standard tier hợp lệ vì nằm trong giới hạn kích thước cho tier đó; PDF scan 3MB ở free tier hợp lệ vì trong giới hạn free tier; file Office gửi tới Read model hợp lệ vì Read model hỗ trợ định dạng Office ngoài ảnh/PDF. PNG 12000x12000px vượt quá kích thước ảnh tối đa hỗ trợ; PDF có mật khẩu bảo vệ phải được mở khoá trước khi submit — cả hai không hợp lệ."}
+];
+
+/* =========================================================
+   STATE & RENDER LOGIC
+   ========================================================= */
+let current = 0;
+let answered = new Array(quizData.length).fill(null); // null | true | false (correct?)
+let userSel = new Array(quizData.length).fill(null);
+
+const quizArea = document.getElementById('quizArea');
+const scoreLabel = document.getElementById('scoreLabel');
+const progressFill = document.getElementById('progressFill');
+const jumpGrid = document.getElementById('jumpGrid');
+
+function buildJumpGrid(){
+  jumpGrid.innerHTML = '';
+  quizData.forEach((q,i)=>{
+    const b = document.createElement('button');
+    b.textContent = i+1;
+    b.onclick = ()=>{ current = i; render(); closeSidebar(); };
+    jumpGrid.appendChild(b);
+  });
+}
+
+function updateHeader(){
+  const answeredCount = answered.filter(a=>a!==null).length;
+  const correctCount = answered.filter(a=>a===true).length;
+  scoreLabel.textContent = correctCount + ' / ' + quizData.length + ' đúng (' + answeredCount + ' đã làm)';
+  progressFill.style.width = (answeredCount/quizData.length*100) + '%';
+  Array.from(jumpGrid.children).forEach((b,i)=>{
+    b.classList.remove('done-ok','done-no','current');
+    if(answered[i]===true) b.classList.add('done-ok');
+    else if(answered[i]===false) b.classList.add('done-no');
+    if(i===current) b.classList.add('current');
+  });
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function formatExplain(text){
+  // Xuống hàng giữa các câu/mệnh đề để dễ đọc: tách sau dấu chấm khi
+  // theo sau là chữ hoa hoặc số (tránh tách nhầm viết tắt như "v.v." hay "e.g.").
+  var parts = text.split(/(?<=\.)\s+(?=[A-Z0-9ÀÁẢÃẠĂẰẲẴẶẤẦẨẪẬÂÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ])/u);
+  return parts.join('<br><br>');
+}
+
+function render(){
+  const q = quizData[current];
+  const isDone = answered[current] !== null;
+  let html = '<div class="card">';
+  html += '<div class="qnum">Câu ' + (current+1) + ' / ' + quizData.length + '</div>';
+  html += '<div class="qtext">' + q.text + '</div>';
+  if(q.note) html += '<div class="hint">' + q.note + '</div>';
+
+  if(q.type === 'single' || q.type === 'multi'){
+    html += '<div id="optList">';
+    q.options.forEach((opt,i)=>{
+      html += '<div class="option ' + (q.type==='multi'?'multi':'') + '" data-i="'+i+'" onclick="toggleOption('+i+')"><div class="mark"></div><div class="label">'+opt+'</div></div>';
+    });
+    html += '</div>';
+  } else if(q.type === 'tf'){
+    html += '<div id="tfList">';
+    q.statements.forEach((s,i)=>{
+      html += '<div class="statement" data-i="'+i+'"><div class="stext">'+s.text+'</div><div class="tfbtns">'+
+        '<div class="tfbtn" data-val="true" onclick="setTF('+i+',true)">True / Đúng</div>'+
+        '<div class="tfbtn" data-val="false" onclick="setTF('+i+',false)">False / Sai</div>'+
+        '</div></div>';
+    });
+    html += '</div>';
+  } else if(q.type === 'match'){
+    html += '<div id="matchList">';
+    q.rows.forEach((r,i)=>{
+      html += '<div class="matchrow" data-i="'+i+'"><div class="desc">'+r.desc+'</div><select onchange="setMatch('+i+',this.value)"><option value="">-- chọn --</option>';
+      q.pool.forEach(p=>{ html += '<option value="'+p+'">'+p+'</option>'; });
+      html += '</select></div>';
+    });
+    html += '</div>';
+  } else if(q.type === 'order'){
+    if(!q._display) q._display = shuffle(q.correctOrder);
+    html += '<div id="orderList">';
+    q._display.forEach((text,i)=>{
+      html += '<div class="orderitem" data-text="'+encodeURIComponent(text)+'"><select onchange="setOrder(this)"><option value="">#</option>';
+      for(let n=1;n<=q.correctOrder.length;n++) html += '<option value="'+n+'">'+n+'</option>';
+      html += '</select><div class="otext">'+text+'</div></div>';
+    });
+    html += '</div>';
+  } else if(q.type === 'fill'){
+    html += '<div id="fillList">';
+    q.blanks.forEach((b,i)=>{
+      html += '<div class="fillrow" data-i="'+i+'">'+ (b.prefix?b.prefix+' ':'') +
+        '<select onchange="setFill('+i+',this.value)"><option value="">-- chọn --</option>';
+      b.options.forEach(o=>{ html += '<option value="'+o+'">'+o+'</option>'; });
+      html += '</select> ' + (b.suffix||'') + '</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="explain" id="explainBox"><b>Giải thích:</b><br><br>' + formatExplain(q.explain) + '</div>';
+  html += '<div class="actions">';
+  html += '<button class="act btn-check" id="checkBtn" onclick="checkAnswer()">Kiểm tra</button>';
+  html += '<button class="act btn-copy" onclick="copyPrompt()">📋 Copy prompt hỏi AI</button>';
+  html += '</div>';
+  html += '<div class="navrow"><button onclick="goPrev()" '+(current===0?'disabled':'')+'>&larr; Câu trước</button><button onclick="goNext()" '+(current===quizData.length-1?'disabled':'')+'>Câu sau &rarr;</button></div>';
+  html += '</div>';
+
+  quizArea.innerHTML = html;
+
+  // restore state if already answered
+  if(isDone){
+    restoreState(q);
+  }
+  updateHeader();
+}
+
+function toggleOption(i){
+  const q = quizData[current];
+  if(answered[current] !== null) return;
+  if(!userSel[current]) userSel[current] = q.type==='multi' ? new Set() : null;
+  const els = document.querySelectorAll('#optList .option');
+  if(q.type === 'single'){
+    userSel[current] = i;
+    els.forEach(e=>e.classList.remove('selected'));
+    els[i].classList.add('selected');
+  } else {
+    if(userSel[current].has(i)) userSel[current].delete(i);
+    else userSel[current].add(i);
+    els[i].classList.toggle('selected');
+  }
+}
+
+function setTF(i,val){
+  if(answered[current] !== null) return;
+  if(!userSel[current]) userSel[current] = {};
+  userSel[current][i] = val;
+  const stmt = document.querySelectorAll('#tfList .statement')[i];
+  stmt.querySelectorAll('.tfbtn').forEach(b=>b.classList.remove('selected'));
+  stmt.querySelector('.tfbtn[data-val="'+val+'"]').classList.add('selected');
+}
+
+function setMatch(i,val){
+  if(!userSel[current]) userSel[current] = {};
+  userSel[current][i] = val;
+}
+
+function setOrder(sel){
+  if(!userSel[current]) userSel[current] = {};
+  const item = sel.closest('.orderitem');
+  const text = decodeURIComponent(item.getAttribute('data-text'));
+  userSel[current][text] = sel.value;
+}
+
+function setFill(i,val){
+  if(!userSel[current]) userSel[current] = {};
+  userSel[current][i] = val;
+}
+
+function checkAnswer(){
+  const q = quizData[current];
+  if(answered[current] !== null) return;
+  let isCorrect = false;
+
+  if(q.type === 'single'){
+    const sel = userSel[current];
+    if(sel === null || sel === undefined){ alert('Hãy chọn một đáp án.'); return; }
+    isCorrect = (sel === q.correct);
+    const els = document.querySelectorAll('#optList .option');
+    els.forEach((e,i)=>{
+      if(i === q.correct) e.classList.add('correct');
+      else if(i === sel) e.classList.add('incorrect');
+    });
+  } else if(q.type === 'multi'){
+    const sel = userSel[current] || new Set();
+    if(sel.size === 0){ alert('Hãy chọn các đáp án.'); return; }
+    const correctSet = new Set(q.correct);
+    isCorrect = sel.size === correctSet.size && [...sel].every(x=>correctSet.has(x));
+    const els = document.querySelectorAll('#optList .option');
+    els.forEach((e,i)=>{
+      if(correctSet.has(i)) e.classList.add('correct');
+      else if(sel.has(i)) e.classList.add('incorrect');
+    });
+  } else if(q.type === 'tf'){
+    const sel = userSel[current] || {};
+    if(Object.keys(sel).length < q.statements.length){ alert('Hãy chọn True/False cho tất cả.'); return; }
+    isCorrect = true;
+    const stmts = document.querySelectorAll('#tfList .statement');
+    q.statements.forEach((s,i)=>{
+      const userVal = sel[i];
+      const ok = (userVal === s.answer);
+      if(!ok) isCorrect = false;
+      const btn = stmts[i].querySelector('.tfbtn[data-val="'+s.answer+'"]');
+      btn.classList.add('correct');
+      if(!ok){
+        const wrongBtn = stmts[i].querySelector('.tfbtn[data-val="'+userVal+'"]');
+        if(wrongBtn) wrongBtn.classList.add('incorrect');
+      }
+    });
+  } else if(q.type === 'match'){
+    const sel = userSel[current] || {};
+    if(Object.keys(sel).length < q.rows.length){ alert('Hãy chọn cho tất cả các dòng.'); return; }
+    isCorrect = true;
+    const rows = document.querySelectorAll('#matchList .matchrow');
+    q.rows.forEach((r,i)=>{
+      const ok = sel[i] === r.correct;
+      if(!ok) isCorrect = false;
+      rows[i].classList.add(ok?'correct':'incorrect');
+      const select = rows[i].querySelector('select');
+      select.disabled = true;
+      if(!ok){
+        const hintSpan = document.createElement('div');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginTop='4px';
+        hintSpan.textContent = 'Đáp án đúng: ' + r.correct;
+        rows[i].appendChild(hintSpan);
+      }
+    });
+  } else if(q.type === 'order'){
+    const sel = userSel[current] || {};
+    if(Object.keys(sel).length < q.correctOrder.length || Object.values(sel).some(v=>!v)){ alert('Hãy chọn số thứ tự cho tất cả.'); return; }
+    isCorrect = true;
+    const items = document.querySelectorAll('#orderList .orderitem');
+    items.forEach(item=>{
+      const text = decodeURIComponent(item.getAttribute('data-text'));
+      const correctPos = q.correctOrder.indexOf(text) + 1;
+      const userPos = parseInt(sel[text]);
+      const ok = (userPos === correctPos);
+      if(!ok) isCorrect = false;
+      item.classList.add(ok?'correct':'incorrect');
+      item.querySelector('select').disabled = true;
+      if(!ok){
+        const hintSpan = document.createElement('span');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginLeft='8px';
+        hintSpan.textContent = '(đúng: #' + correctPos + ')';
+        item.appendChild(hintSpan);
+      }
+    });
+  } else if(q.type === 'fill'){
+    const sel = userSel[current] || {};
+    if(Object.keys(sel).length < q.blanks.length || Object.values(sel).some(v=>!v)){ alert('Hãy chọn cho tất cả các ô trống.'); return; }
+    isCorrect = true;
+    const rows = document.querySelectorAll('#fillList .fillrow');
+    q.blanks.forEach((b,i)=>{
+      const ok = sel[i] === b.correct;
+      if(!ok) isCorrect = false;
+      rows[i].classList.add(ok?'correct':'incorrect');
+      rows[i].querySelector('select').disabled = true;
+      if(!ok){
+        const hintSpan = document.createElement('span');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginLeft='6px';
+        hintSpan.textContent = '(đúng: ' + b.correct + ')';
+        rows[i].appendChild(hintSpan);
+      }
+    });
+  }
+
+  answered[current] = isCorrect;
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('explainBox').classList.add('show');
+  const badge = document.createElement('div');
+  badge.className = 'result-badge ' + (isCorrect?'ok':'no');
+  badge.textContent = isCorrect ? '✔ Chính xác' : '✘ Chưa đúng';
+  document.getElementById('explainBox').prepend(badge);
+
+  updateHeader();
+}
+
+function restoreState(q){
+  // disable inputs and re-apply visual state after navigating back to an answered question
+  const sel = userSel[current];
+  if(q.type === 'single' || q.type === 'multi'){
+    const els = document.querySelectorAll('#optList .option');
+    const correctSet = new Set(Array.isArray(q.correct)?q.correct:[q.correct]);
+    els.forEach((e,i)=>{
+      e.onclick = null;
+      const userHas = q.type==='multi' ? (sel && sel.has && sel.has(i)) : (sel===i);
+      if(correctSet.has(i)) e.classList.add('correct');
+      else if(userHas) e.classList.add('incorrect');
+    });
+  } else if(q.type === 'tf'){
+    const stmts = document.querySelectorAll('#tfList .statement');
+    q.statements.forEach((s,i)=>{
+      stmts[i].querySelectorAll('.tfbtn').forEach(b=>b.onclick=null);
+      const btn = stmts[i].querySelector('.tfbtn[data-val="'+s.answer+'"]');
+      btn.classList.add('correct');
+      const userVal = sel ? sel[i] : undefined;
+      if(userVal !== undefined && userVal !== s.answer){
+        const wrongBtn = stmts[i].querySelector('.tfbtn[data-val="'+userVal+'"]');
+        if(wrongBtn) wrongBtn.classList.add('incorrect');
+      }
+    });
+  } else if(q.type === 'match'){
+    const rows = document.querySelectorAll('#matchList .matchrow');
+    q.rows.forEach((r,i)=>{
+      const select = rows[i].querySelector('select');
+      select.disabled = true;
+      if(sel && sel[i]) select.value = sel[i];
+      const ok = sel && sel[i] === r.correct;
+      rows[i].classList.add(ok?'correct':'incorrect');
+      if(!ok){
+        const hintSpan = document.createElement('div');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginTop='4px';
+        hintSpan.textContent = 'Đáp án đúng: ' + r.correct;
+        rows[i].appendChild(hintSpan);
+      }
+    });
+  } else if(q.type === 'order'){
+    const items = document.querySelectorAll('#orderList .orderitem');
+    items.forEach(item=>{
+      const text = decodeURIComponent(item.getAttribute('data-text'));
+      const select = item.querySelector('select');
+      select.disabled = true;
+      if(sel && sel[text]) select.value = sel[text];
+      const correctPos = q.correctOrder.indexOf(text) + 1;
+      const userPos = sel ? parseInt(sel[text]) : null;
+      const ok = (userPos === correctPos);
+      item.classList.add(ok?'correct':'incorrect');
+      if(!ok){
+        const hintSpan = document.createElement('span');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginLeft='8px';
+        hintSpan.textContent = '(đúng: #' + correctPos + ')';
+        item.appendChild(hintSpan);
+      }
+    });
+  } else if(q.type === 'fill'){
+    const rows = document.querySelectorAll('#fillList .fillrow');
+    q.blanks.forEach((b,i)=>{
+      const select = rows[i].querySelector('select');
+      select.disabled = true;
+      if(sel && sel[i]) select.value = sel[i];
+      const ok = sel && sel[i] === b.correct;
+      rows[i].classList.add(ok?'correct':'incorrect');
+      if(!ok){
+        const hintSpan = document.createElement('span');
+        hintSpan.style.fontSize='12px'; hintSpan.style.color='#1e8e3e'; hintSpan.style.marginLeft='6px';
+        hintSpan.textContent = '(đúng: ' + b.correct + ')';
+        rows[i].appendChild(hintSpan);
+      }
+    });
+  }
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('explainBox').classList.add('show');
+  const badge = document.createElement('div');
+  badge.className = 'result-badge ' + (answered[current]?'ok':'no');
+  badge.textContent = answered[current] ? '✔ Chính xác' : '✘ Chưa đúng';
+  document.getElementById('explainBox').prepend(badge);
+}
+
+function buildPromptText(q){
+  let body = 'Tôi đang ôn thi chứng chỉ Microsoft AI-103 (Azure AI Engineer). ';
+  body += 'Hãy giải thích chi tiết, dễ hiểu bằng tiếng Việt cho câu hỏi trắc nghiệm sau, kèm ví dụ thực tế nếu có thể.\n\n';
+  body += '--- CÂU HỎI ---\n' + q.text + '\n\n';
+
+  if(q.type === 'single' || q.type === 'multi'){
+    body += (q.type==='multi' ? '(Chọn nhiều đáp án)\n' : '(Chọn một đáp án)\n');
+    q.options.forEach((opt,i)=>{
+      body += String.fromCharCode(65+i) + '. ' + opt + '\n';
+    });
+    body += '\n--- ĐÁP ÁN ĐÚNG THEO HỆ THỐNG ---\n';
+    const correctArr = Array.isArray(q.correct) ? q.correct : [q.correct];
+    body += correctArr.map(i=>String.fromCharCode(65+i)).join(', ') + '\n';
+  } else if(q.type === 'tf'){
+    body += 'Với mỗi phát biểu, cho biết True hay False:\n';
+    q.statements.forEach((s,i)=>{
+      body += (i+1) + '. ' + s.text + ' → Đáp án đúng: ' + (s.answer?'True':'False') + '\n';
+    });
+  } else if(q.type === 'match'){
+    body += 'Ghép mỗi mô tả với khái niệm đúng:\n';
+    q.rows.forEach((r,i)=>{
+      body += (i+1) + '. ' + r.desc + ' → Đáp án đúng: ' + r.correct + '\n';
+    });
+  } else if(q.type === 'order'){
+    body += 'Sắp xếp các bước theo thứ tự đúng. Thứ tự đúng là:\n';
+    q.correctOrder.forEach((s,i)=>{
+      body += (i+1) + '. ' + s + '\n';
+    });
+  } else if(q.type === 'fill'){
+    body += 'Điền vào chỗ trống. Đáp án đúng cho từng ô:\n';
+    q.blanks.forEach((b,i)=>{
+      body += (i+1) + '. ' + (b.prefix||'') + ' ___ ' + (b.suffix||'') + ' → Đáp án đúng: ' + b.correct + '\n';
+    });
+  }
+
+  body += '\n--- GIẢI THÍCH NGẮN HIỆN CÓ ---\n' + q.explain.replace(/<[^>]+>/g,'') + '\n\n';
+  body += 'Hãy giải thích sâu hơn: vì sao đáp án đúng là đúng, vì sao các đáp án còn lại sai/không phù hợp, ';
+  body += 'và nếu có khái niệm liên quan trong Azure AI mà tôi cần nắm để không nhầm lẫn trong các câu tương tự, hãy nói rõ luôn.';
+  return body;
+}
+
+function copyPrompt(){
+  const q = quizData[current];
+  const text = buildPromptText(q);
+  const doToast = ()=>{
+    const toast = document.getElementById('copyToast');
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1800);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(doToast).catch(()=>fallbackCopy(text, doToast));
+  } else {
+    fallbackCopy(text, doToast);
+  }
+}
+
+function fallbackCopy(text, cb){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  if(cb) cb();
+}
+
+function goPrev(){ if(current>0){ current--; render(); } }
+function goNext(){ if(current<quizData.length-1){ current++; render(); } }
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+buildJumpGrid();
+render();
+</script>
+</body>
+</html>

@@ -615,6 +615,13 @@ function shuffle(arr){
   return a;
 }
 
+function formatExplain(text){
+  // Xuống hàng giữa các câu/mệnh đề để dễ đọc: tách sau dấu chấm khi
+  // theo sau là chữ hoa hoặc số (tránh tách nhầm viết tắt như "v.v." hay "e.g.").
+  var parts = text.split(/(?<=\.)\s+(?=[A-Z0-9ÀÁẢÃẠĂẰẲẴẶẤẦẨẪẬÂÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ])/u);
+  return parts.join('<br><br>');
+}
+
 function render(){
   const q = quizData[current];
   const isDone = answered[current] !== null;
@@ -666,7 +673,7 @@ function render(){
     html += '</div>';
   }
 
-  html += '<div class="explain" id="explainBox"><b>Giải thích:</b><br>' + q.explain + '</div>';
+  html += '<div class="explain" id="explainBox"><b>Giải thích:</b><br><br>' + formatExplain(q.explain) + '</div>';
   html += '<div class="actions">';
   html += '<button class="act btn-check" id="checkBtn" onclick="checkAnswer()">Kiểm tra</button>';
   html += '<button class="act btn-copy" onclick="copyPrompt()">📋 Copy prompt hỏi AI</button>';
