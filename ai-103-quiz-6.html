@@ -517,6 +517,26 @@ function shuffle(arr){
   return a;
 }
 
+function getDisplay(q){
+  // Shuffles single/multi answer options once per question and remaps the
+  // correct index/indices so the correct answer isn't always in the same spot.
+  if(q._d) return q._d;
+  if(q.type === 'single' || q.type === 'multi'){
+    const order = shuffle(q.options.map((_,i)=>i));
+    const newOptions = order.map(oi=>q.options[oi]);
+    let newCorrect;
+    if(q.type === 'single'){
+      newCorrect = order.indexOf(q.correct);
+    } else {
+      newCorrect = q.correct.map(oc=>order.indexOf(oc));
+    }
+    q._d = {options:newOptions, correct:newCorrect};
+  } else {
+    q._d = {options:q.options, correct:q.correct};
+  }
+  return q._d;
+}
+
 function formatExplain(text){
   // Xuống hàng giữa các câu/mệnh đề để dễ đọc: tách sau dấu chấm khi
   // theo sau là chữ hoa hoặc số (tránh tách nhầm viết tắt như "v.v." hay "e.g.").
@@ -533,8 +553,9 @@ function render(){
   if(q.note) html += '<div class="hint">' + q.note + '</div>';
 
   if(q.type === 'single' || q.type === 'multi'){
+    const d = getDisplay(q);
     html += '<div id="optList">';
-    q.options.forEach((opt,i)=>{
+    d.options.forEach((opt,i)=>{
       html += '<div class="option ' + (q.type==='multi'?'multi':'') + '" data-i="'+i+'" onclick="toggleOption('+i+')"><div class="mark"></div><div class="label">'+opt+'</div></div>';
     });
     html += '</div>';
@@ -548,10 +569,11 @@ function render(){
     });
     html += '</div>';
   } else if(q.type === 'match'){
+    if(!q._poolDisplay) q._poolDisplay = shuffle(q.pool);
     html += '<div id="matchList">';
     q.rows.forEach((r,i)=>{
       html += '<div class="matchrow" data-i="'+i+'"><div class="desc">'+r.desc+'</div><select onchange="setMatch('+i+',this.value)"><option value="">-- chọn --</option>';
-      q.pool.forEach(p=>{ html += '<option value="'+p+'">'+p+'</option>'; });
+      q._poolDisplay.forEach(p=>{ html += '<option value="'+p+'">'+p+'</option>'; });
       html += '</select></div>';
     });
     html += '</div>';
@@ -567,9 +589,10 @@ function render(){
   } else if(q.type === 'fill'){
     html += '<div id="fillList">';
     q.blanks.forEach((b,i)=>{
+      if(!b._displayOptions) b._displayOptions = shuffle(b.options);
       html += '<div class="fillrow" data-i="'+i+'">'+ (b.prefix?b.prefix+' ':'') +
         '<select onchange="setFill('+i+',this.value)"><option value="">-- chọn --</option>';
-      b.options.forEach(o=>{ html += '<option value="'+o+'">'+o+'</option>'; });
+      b._displayOptions.forEach(o=>{ html += '<option value="'+o+'">'+o+'</option>'; });
       html += '</select> ' + (b.suffix||'') + '</div>';
     });
     html += '</div>';
@@ -640,18 +663,20 @@ function checkAnswer(){
   let isCorrect = false;
 
   if(q.type === 'single'){
+    const d = getDisplay(q);
     const sel = userSel[current];
     if(sel === null || sel === undefined){ alert('Hãy chọn một đáp án.'); return; }
-    isCorrect = (sel === q.correct);
+    isCorrect = (sel === d.correct);
     const els = document.querySelectorAll('#optList .option');
     els.forEach((e,i)=>{
-      if(i === q.correct) e.classList.add('correct');
+      if(i === d.correct) e.classList.add('correct');
       else if(i === sel) e.classList.add('incorrect');
     });
   } else if(q.type === 'multi'){
+    const d = getDisplay(q);
     const sel = userSel[current] || new Set();
     if(sel.size === 0){ alert('Hãy chọn các đáp án.'); return; }
-    const correctSet = new Set(q.correct);
+    const correctSet = new Set(d.correct);
     isCorrect = sel.size === correctSet.size && [...sel].every(x=>correctSet.has(x));
     const els = document.querySelectorAll('#optList .option');
     els.forEach((e,i)=>{
@@ -746,8 +771,9 @@ function restoreState(q){
   // disable inputs and re-apply visual state after navigating back to an answered question
   const sel = userSel[current];
   if(q.type === 'single' || q.type === 'multi'){
+    const d = getDisplay(q);
     const els = document.querySelectorAll('#optList .option');
-    const correctSet = new Set(Array.isArray(q.correct)?q.correct:[q.correct]);
+    const correctSet = new Set(Array.isArray(d.correct)?d.correct:[d.correct]);
     els.forEach((e,i)=>{
       e.onclick = null;
       const userHas = q.type==='multi' ? (sel && sel.has && sel.has(i)) : (sel===i);
@@ -824,43 +850,32 @@ function restoreState(q){
 }
 
 function buildPromptText(q){
-  let body = 'Tôi đang ôn thi chứng chỉ Microsoft AI-103 (Azure AI Engineer). ';
-  body += 'Hãy giải thích chi tiết, dễ hiểu bằng tiếng Việt cho câu hỏi trắc nghiệm sau, kèm ví dụ thực tế nếu có thể.\n\n';
-  body += '--- CÂU HỎI ---\n' + q.text + '\n\n';
+  let body = 'Giải thích ngắn gọn, dễ hiểu bằng tiếng Việt câu hỏi AI-103 sau — vì sao đáp án đúng là đúng và các lựa chọn khác sai ở đâu:\n\n';
+  body += q.text + '\n';
 
   if(q.type === 'single' || q.type === 'multi'){
-    body += (q.type==='multi' ? '(Chọn nhiều đáp án)\n' : '(Chọn một đáp án)\n');
-    q.options.forEach((opt,i)=>{
-      body += String.fromCharCode(65+i) + '. ' + opt + '\n';
-    });
-    body += '\n--- ĐÁP ÁN ĐÚNG THEO HỆ THỐNG ---\n';
-    const correctArr = Array.isArray(q.correct) ? q.correct : [q.correct];
-    body += correctArr.map(i=>String.fromCharCode(65+i)).join(', ') + '\n';
+    const d = getDisplay(q);
+    d.options.forEach((opt,i)=>{ body += String.fromCharCode(65+i) + '. ' + opt + '\n'; });
+    const correctArr = Array.isArray(d.correct) ? d.correct : [d.correct];
+    body += 'Đáp án đúng: ' + correctArr.map(i=>String.fromCharCode(65+i)).join(', ') + '\n';
   } else if(q.type === 'tf'){
-    body += 'Với mỗi phát biểu, cho biết True hay False:\n';
     q.statements.forEach((s,i)=>{
-      body += (i+1) + '. ' + s.text + ' → Đáp án đúng: ' + (s.answer?'True':'False') + '\n';
+      body += (i+1) + '. ' + s.text + ' → ' + (s.answer?'True':'False') + '\n';
     });
   } else if(q.type === 'match'){
-    body += 'Ghép mỗi mô tả với khái niệm đúng:\n';
     q.rows.forEach((r,i)=>{
-      body += (i+1) + '. ' + r.desc + ' → Đáp án đúng: ' + r.correct + '\n';
+      body += (i+1) + '. ' + r.desc + ' → ' + r.correct + '\n';
     });
   } else if(q.type === 'order'){
-    body += 'Sắp xếp các bước theo thứ tự đúng. Thứ tự đúng là:\n';
     q.correctOrder.forEach((s,i)=>{
       body += (i+1) + '. ' + s + '\n';
     });
   } else if(q.type === 'fill'){
-    body += 'Điền vào chỗ trống. Đáp án đúng cho từng ô:\n';
     q.blanks.forEach((b,i)=>{
-      body += (i+1) + '. ' + (b.prefix||'') + ' ___ ' + (b.suffix||'') + ' → Đáp án đúng: ' + b.correct + '\n';
+      body += (i+1) + '. ' + (b.prefix||'') + ' ___ ' + (b.suffix||'') + ' → ' + b.correct + '\n';
     });
   }
 
-  body += '\n--- GIẢI THÍCH NGẮN HIỆN CÓ ---\n' + q.explain.replace(/<[^>]+>/g,'') + '\n\n';
-  body += 'Hãy giải thích sâu hơn: vì sao đáp án đúng là đúng, vì sao các đáp án còn lại sai/không phù hợp, ';
-  body += 'và nếu có khái niệm liên quan trong Azure AI mà tôi cần nắm để không nhầm lẫn trong các câu tương tự, hãy nói rõ luôn.';
   return body;
 }
 
