@@ -2,40 +2,44 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Ôn tập AI-103</title>
-<style>
-  *{box-sizing:border-box;}
-  body{
-    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:#f6f7f9; margin:0; padding:0; color:#202124;
-  }
-  .wrap{max-width:600px; margin:0 auto; padding:30px 16px 60px;}
-  h1{font-size:22px; margin-bottom:4px;}
-  .sub{color:#5f6368; font-size:14px; margin-bottom:24px;}
-  .card{
-    display:block; background:#fff; border:1px solid #dadce0; border-radius:10px;
-    padding:16px 18px; margin-bottom:14px; text-decoration:none; color:#202124;
-    transition:box-shadow .15s, border-color .15s;
-  }
-  .card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08); border-color:#1a73e8;}
-  .card .tag{
-    display:inline-block; font-size:11px; font-weight:700; color:#1a73e8;
-    background:#eaf1fe; padding:2px 8px; border-radius:10px; margin-bottom:8px;
-  }
-  .card .title{font-size:16px; font-weight:600; margin-bottom:4px;}
-  .card .desc{font-size:13px; color:#5f6368;}
-  .empty{color:#5f6368; font-size:14px; padding:20px 0;}
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>📚 Ôn tập AI-103</h1>
-  <div class="sub">Chọn một bộ quiz để bắt đầu luyện tập</div>
+<div class="index-wrap">
+  <div class="index-header">
+    <h1>📚 Ôn tập AI-103</h1>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Đổi giao diện sáng/tối">🌙</button>
+  </div>
+  <div class="index-sub">Chọn một bộ quiz để bắt đầu luyện tập</div>
   <div id="list"></div>
 </div>
 
 <script>
+/* ---------- Theme (light/dark) — shared logic, kept inline since
+   the index page has no other JS file to load it from. ---------- */
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  try{ localStorage.setItem('ai103-theme', theme); }catch(e){}
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+(function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem('ai103-theme'); }catch(e){}
+  if(saved === 'dark' || saved === 'light'){
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+})();
+
 /* =========================================================
    Danh sách quiz — thêm quiz mới ở đây, mỗi lần chỉ cần
    thêm 1 object vào array bên dưới rồi upload file lên repo.
@@ -44,47 +48,54 @@ const quizzes = [
   {
     file: "ai-103-quiz-1.html",
     tag: "AI-103",
-    title: "Quiz 1",
-    desc: "60 câu"
+    title: "Quiz 1 — 60 câu",
+    desc: "Tổng hợp câu hỏi luyện tập AI-103 (single/multi choice, true-false, matching, sắp xếp, điền chỗ trống)."
   },
   {
     file: "ai-103-quiz-2.html",
     tag: "AI-103",
-    title: "Quiz 2",
-    desc: "30 câu"
+    title: "Quiz 2 — 30 câu",
+    desc: "Câu hỏi biên soạn theo các chủ đề/tình huống thường gặp trong đề thi AI-103: agent, RAG, orchestration, Content Understanding, responsible AI..."
   },
   {
     file: "ai-103-quiz-3.html",
     tag: "AI-103",
-    title: "Quiz 3",
-    desc: "60 câu"
+    title: "Quiz 3 — 60 câu",
+    desc: "Foundry SDK/Portal/IQ, model catalog, agent orchestration (sequential/group chat/Magentic/A2A), MCP tools, speech, language, Content Understanding."
   },
   {
     file: "ai-103-quiz-4.html",
     tag: "AI-103",
-    title: "Quiz 4",
-    desc: "60 câu"
+    title: "Quiz 4 — 60 câu",
+    desc: "Responses API, benchmark metrics, orchestration patterns (concurrent/handoff/Magentic), MCP dynamic discovery, Voice Live, Document Intelligence."
   },
   {
     file: "ai-103-quiz-5.html",
     tag: "AI-103",
-    title: "Quiz 5",
-    desc: "60 câu"
+    title: "Quiz 5 — 60 câu",
+    desc: "Responsible AI, model catalog filters, evaluation, code interpreter, agent frameworks, Voice Live auth, Document Intelligence, search enrichment."
   },
   {
     file: "ai-103-quiz-6.html",
     tag: "AI-103",
-    title: "Quiz 6",
-    desc: "60 câu - AI Cloud hub"
+    title: "Quiz 6 — 50 câu",
+    desc: "Câu hỏi tình huống thực tế: Content Understanding analyzer, prompt shields/spotlighting, agent memory & thread, RAG observability, image editing, CI/CD evaluation gate."
   }
+  // Thêm quiz mới ở đây, ví dụ:
+  // {
+  //   file: "ai-103-quiz-7.html",
+  //   tag: "AI-103",
+  //   title: "Quiz 7 — 60 câu",
+  //   desc: "Mô tả ngắn cho quiz này."
+  // },
 ];
 
 const listEl = document.getElementById('list');
 if(quizzes.length === 0){
-  listEl.innerHTML = '<div class="empty">Chưa có quiz nào. Thêm file .html và khai báo trong index.html.</div>';
+  listEl.innerHTML = '<div class="index-empty">Chưa có quiz nào. Thêm file .html và khai báo trong index.html.</div>';
 } else {
   listEl.innerHTML = quizzes.map(q => `
-    <a class="card" href="${q.file}">
+    <a class="quiz-card" href="${q.file}">
       <div class="tag">${q.tag}</div>
       <div class="title">${q.title}</div>
       <div class="desc">${q.desc}</div>
