@@ -14,32 +14,18 @@
   </div>
   <div class="index-sub">Chọn một bộ quiz để bắt đầu luyện tập</div>
   <div id="list"></div>
+
+  <div class="history-section">
+    <div class="history-header">
+      <h2>🕓 Lịch sử làm bài</h2>
+      <button class="history-clear" onclick="clearHistory()">Xoá lịch sử</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
 </div>
 
+<script src="theme.js"></script>
 <script>
-/* ---------- Theme (light/dark) — shared logic, kept inline since
-   the index page has no other JS file to load it from. ---------- */
-function applyTheme(theme){
-  document.documentElement.setAttribute('data-theme', theme);
-  try{ localStorage.setItem('ai103-theme', theme); }catch(e){}
-  const btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-}
-function toggleTheme(){
-  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-}
-(function initTheme(){
-  let saved = null;
-  try{ saved = localStorage.getItem('ai103-theme'); }catch(e){}
-  if(saved === 'dark' || saved === 'light'){
-    applyTheme(saved);
-  } else {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
-  }
-})();
-
 /* =========================================================
    Danh sách quiz — thêm quiz mới ở đây, mỗi lần chỉ cần
    thêm 1 object vào array bên dưới rồi upload file lên repo.
@@ -90,18 +76,90 @@ const quizzes = [
   // },
 ];
 
+/* =========================================================
+   Đọc tiến trình & lịch sử làm bài từ localStorage.
+   Dữ liệu được quiz-engine.js ghi lại mỗi khi làm bài, dùng
+   chung key nên vẫn còn nguyên dù bạn deploy code mới lên.
+   ========================================================= */
+function loadProgressFor(file){
+  try{
+    const raw = localStorage.getItem('ai103_progress_' + file);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem('ai103_history');
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+
+function formatDateTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleString('vi-VN', {
+    day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+}
+
+function scoreClass(correct, total){
+  if(total === 0) return 'mid';
+  const pct = correct / total;
+  if(pct >= 0.8) return 'good';
+  if(pct >= 0.5) return 'mid';
+  return 'low';
+}
+
+function clearHistory(){
+  if(!confirm('Xoá toàn bộ lịch sử làm bài? Hành động này không thể hoàn tác.')) return;
+  try{ localStorage.removeItem('ai103_history'); }catch(e){}
+  renderHistory();
+}
+
+function renderHistory(){
+  const el = document.getElementById('historyList');
+  const history = loadHistory().slice().reverse(); // mới nhất lên đầu
+  if(history.length === 0){
+    el.innerHTML = '<div class="index-empty">Chưa có lượt làm bài nào được ghi lại. Hoàn thành 1 quiz để thấy lịch sử ở đây.</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => `
+    <div class="history-item">
+      <div class="h-left">
+        <div class="h-title">${h.quizTitle || h.quizFile}</div>
+        <div class="h-date">${formatDateTime(h.date)}</div>
+      </div>
+      <div class="h-score ${scoreClass(h.correct, h.total)}">${h.correct} / ${h.total}</div>
+    </div>
+  `).join('');
+}
+
 const listEl = document.getElementById('list');
 if(quizzes.length === 0){
   listEl.innerHTML = '<div class="index-empty">Chưa có quiz nào. Thêm file .html và khai báo trong index.html.</div>';
 } else {
-  listEl.innerHTML = quizzes.map(q => `
+  listEl.innerHTML = quizzes.map(q => {
+    const p = loadProgressFor(q.file);
+    let badge = '';
+    if(p && p.total > 0){
+      if(p.answeredCount >= p.total){
+        badge = `<div class="progress-badge done">✅ Đã hoàn thành: ${p.correct}/${p.total} đúng</div>`;
+      } else if(p.answeredCount > 0){
+        badge = `<div class="progress-badge ongoing">🕒 Đang làm dở: ${p.answeredCount}/${p.total} câu</div>`;
+      }
+    }
+    return `
     <a class="quiz-card" href="${q.file}">
       <div class="tag">${q.tag}</div>
       <div class="title">${q.title}</div>
       <div class="desc">${q.desc}</div>
+      ${badge}
     </a>
-  `).join('');
+  `;
+  }).join('');
 }
+
+renderHistory();
 </script>
 </body>
 </html>

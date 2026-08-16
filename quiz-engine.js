@@ -1,32 +1,59 @@
 /* =========================================================
-   AI-103 Quiz — Shared engine (render, scoring, sidebar, theme)
+   AI-103 Quiz — Shared engine (render, scoring, sidebar, progress)
    Used by every quiz-N.html. Requires quizData to be defined
-   by a previously-loaded data/quiz-N-data.js script tag.
+   by a previously-loaded data/quiz-N-data.js script tag, and
+   theme.js to be loaded for the light/dark toggle.
    ========================================================= */
 
-/* ---------- Theme (light/dark) ---------- */
-function applyTheme(theme){
-  document.documentElement.setAttribute('data-theme', theme);
-  try{ localStorage.setItem('ai103-theme', theme); }catch(e){}
-  const btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+/* ---------- Progress & history tracking (localStorage) ---------
+   Storage keys used (kept stable across future deploys so old
+   data is never lost when the site code is updated):
+     - 'ai103_progress_<quiz-file>.html' → current/last state of one quiz
+     - 'ai103_history' → array of every completed attempt, newest last
+   ------------------------------------------------------------- */
+const QUIZ_FILE = (location.pathname.split('/').pop() || 'unknown-quiz.html');
+let historyLoggedThisLoad = false;
+
+function getQuizTitle(){
+  const h1 = document.querySelector('header h1');
+  return h1 ? h1.textContent.trim() : QUIZ_FILE;
 }
 
-function toggleTheme(){
-  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  applyTheme(current === 'dark' ? 'light' : 'dark');
+function saveProgress(){
+  try{
+    const correctCount = answered.filter(a=>a===true).length;
+    const answeredCount = answered.filter(a=>a!==null).length;
+    const data = {
+      quizFile: QUIZ_FILE,
+      quizTitle: getQuizTitle(),
+      correct: correctCount,
+      answeredCount: answeredCount,
+      total: quizData.length,
+      updatedAt: Date.now()
+    };
+    localStorage.setItem('ai103_progress_' + QUIZ_FILE, JSON.stringify(data));
+    if(answeredCount === quizData.length && answeredCount > 0 && !historyLoggedThisLoad){
+      logHistoryEntry(data);
+      historyLoggedThisLoad = true;
+    }
+  }catch(e){ /* localStorage unavailable (private mode etc.) — fail silently */ }
 }
 
-(function initTheme(){
-  let saved = null;
-  try{ saved = localStorage.getItem('ai103-theme'); }catch(e){}
-  if(saved === 'dark' || saved === 'light'){
-    applyTheme(saved);
-  } else {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
-  }
-})();
+function logHistoryEntry(data){
+  try{
+    const raw = localStorage.getItem('ai103_history');
+    const history = raw ? JSON.parse(raw) : [];
+    history.push({
+      quizFile: data.quizFile,
+      quizTitle: data.quizTitle,
+      correct: data.correct,
+      total: data.total,
+      date: Date.now()
+    });
+    if(history.length > 300) history.splice(0, history.length - 300);
+    localStorage.setItem('ai103_history', JSON.stringify(history));
+  }catch(e){}
+}
 
 
 /* =========================================================
@@ -62,6 +89,7 @@ function updateHeader(){
     else if(answered[i]===false) b.classList.add('done-no');
     if(i===current) b.classList.add('current');
   });
+  saveProgress();
 }
 
 function shuffle(arr){
