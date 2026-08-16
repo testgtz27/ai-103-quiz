@@ -23,7 +23,7 @@ function saveProgress(){
   try{
     const correctCount = answered.filter(a=>a===true).length;
     const answeredCount = answered.filter(a=>a!==null).length;
-    const data = {
+    const summary = {
       quizFile: QUIZ_FILE,
       quizTitle: getQuizTitle(),
       correct: correctCount,
@@ -31,12 +31,89 @@ function saveProgress(){
       total: quizData.length,
       updatedAt: Date.now()
     };
-    localStorage.setItem('ai103_progress_' + QUIZ_FILE, JSON.stringify(data));
+    localStorage.setItem('ai103_progress_' + QUIZ_FILE, JSON.stringify(summary));
     if(answeredCount === quizData.length && answeredCount > 0 && !historyLoggedThisLoad){
-      logHistoryEntry(data);
+      logHistoryEntry(summary);
       historyLoggedThisLoad = true;
     }
+    saveFullState();
   }catch(e){ /* localStorage unavailable (private mode etc.) — fail silently */ }
+}
+
+/* ---- Full per-question state (so resuming a quiz shows exactly
+   what was answered, what was selected, and in what shuffled
+   order the options were shown) ---- */
+function serializeUserSel(sel, type){
+  if(sel === undefined || sel === null) return null;
+  if(type === 'multi') return Array.from(sel); // Set -> array for JSON
+  return sel; // single(number) / tf,match,fill,order(plain object) are already JSON-safe
+}
+function deserializeUserSel(sel, type){
+  if(sel === undefined || sel === null) return null;
+  if(type === 'multi') return new Set(sel);
+  return sel;
+}
+
+function collectDisplays(){
+  // Captures whatever shuffled option orders have been generated so far,
+  // so a reload shows the same order instead of reshuffling underneath the user.
+  const displays = {};
+  quizData.forEach(q=>{
+    const entry = {};
+    let has = false;
+    if((q.type==='single'||q.type==='multi') && q._d){ entry.d = q._d; has = true; }
+    if(q.type==='match' && q._poolDisplay){ entry.pool = q._poolDisplay; has = true; }
+    if(q.type==='order' && q._display){ entry.order = q._display; has = true; }
+    if(q.type==='fill' && q.blanks.some(b=>b._displayOptions)){
+      entry.blanksOptions = q.blanks.map(b=>b._displayOptions || null);
+      has = true;
+    }
+    if(has) displays[q.id] = entry;
+  });
+  return displays;
+}
+
+function applyDisplays(displays){
+  if(!displays) return;
+  quizData.forEach(q=>{
+    const entry = displays[q.id];
+    if(!entry) return;
+    if(entry.d) q._d = entry.d;
+    if(entry.pool) q._poolDisplay = entry.pool;
+    if(entry.order) q._display = entry.order;
+    if(entry.blanksOptions){
+      q.blanks.forEach((b,i)=>{ if(entry.blanksOptions[i]) b._displayOptions = entry.blanksOptions[i]; });
+    }
+  });
+}
+
+function saveFullState(){
+  try{
+    const state = {
+      current: current,
+      answered: answered,
+      userSel: userSel.map((sel,i)=> serializeUserSel(sel, quizData[i].type)),
+      displays: collectDisplays(),
+      savedAt: Date.now()
+    };
+    localStorage.setItem('ai103_state_' + QUIZ_FILE, JSON.stringify(state));
+  }catch(e){}
+}
+
+function loadFullState(){
+  try{
+    const raw = localStorage.getItem('ai103_state_' + QUIZ_FILE);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function resetQuiz(){
+  if(!confirm('Làm lại từ đầu? Toàn bộ đáp án đã chọn cho quiz này sẽ bị xoá.')) return;
+  try{
+    localStorage.removeItem('ai103_state_' + QUIZ_FILE);
+    localStorage.removeItem('ai103_progress_' + QUIZ_FILE);
+  }catch(e){}
+  location.reload();
 }
 
 function logHistoryEntry(data){
@@ -59,9 +136,13 @@ function logHistoryEntry(data){
 /* =========================================================
    STATE & RENDER LOGIC
    ========================================================= */
-let current = 0;
-let answered = new Array(quizData.length).fill(null); // null | true | false (correct?)
-let userSel = new Array(quizData.length).fill(null);
+const _savedState = loadFullState();
+const _hasValidSavedState = _savedState && Array.isArray(_savedState.answered) && _savedState.answered.length === quizData.length;
+
+let current = _hasValidSavedState && typeof _savedState.current === 'number' && _savedState.current >= 0 && _savedState.current < quizData.length ? _savedState.current : 0;
+let answered = _hasValidSavedState ? _savedState.answered.slice() : new Array(quizData.length).fill(null); // null | true | false (correct?)
+let userSel = _hasValidSavedState ? _savedState.userSel.map((sel,i)=> deserializeUserSel(sel, quizData[i].type)) : new Array(quizData.length).fill(null);
+if(_hasValidSavedState) applyDisplays(_savedState.displays);
 
 const quizArea = document.getElementById('quizArea');
 const scoreLabel = document.getElementById('scoreLabel');
@@ -502,5 +583,17 @@ function closeSidebar(){
   document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
+function injectResetButton(){
+  const sidebar = document.getElementById('sidebar');
+  if(!sidebar || document.getElementById('resetQuizBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'resetQuizBtn';
+  btn.className = 'sidebar-home-link sidebar-reset-link';
+  btn.textContent = '🔄 Làm lại từ đầu';
+  btn.onclick = resetQuiz;
+  sidebar.appendChild(btn);
+}
+
 buildJumpGrid();
+injectResetButton();
 render();
