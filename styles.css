@@ -10,7 +10,7 @@
   --border:#dadce0;
   --text:#202124;
   --text-secondary:#5f6368;
-  --green:#1e8e3e; --green-bg:#e6f4ea;
+  --green:#1e8e3e; --green-bg:#e6f4ea; --orange-bg: #FE7F2D;
   --red:#d93025; --red-bg:#fce8e6;
   --blue:#1a73e8; --blue-bg:#eaf1fe;
   --option-hover:#f1f4fd;
@@ -230,7 +230,7 @@ button.act{padding:12px 0; border-radius:8px; border:none; font-size:15px; font-
   padding:3px 9px; border-radius:10px; margin-top:8px;
 }
 .progress-badge.done{background:var(--green-bg); color:var(--green);}
-.progress-badge.ongoing{background:var(--blue-bg); color:var(--blue);}
+.progress-badge.ongoing{background:var(--orange-bg); color:var(--blue-bg);}
 
 /* ---------- History section (index page) ---------- */
 .history-section{margin-top:32px;}
